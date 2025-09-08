@@ -15,8 +15,11 @@ Advanced spatial analysis and data science for urban planning and public policy.
 - **Final Project:** Capstone modeling challenge
 
 ## About Me
-[Students will customize this section]
+- I am a second-year Master of City Planning student concentrating in Equity and Engagement. I have five years of housing and community engagement experience prior to coming to Penn. I am looking forward to learning more analytical skills!
 
 ## Contact
-- Email: [your.email@upenn.edu]
-- GitHub: [@your-username]
+- Email: ncarlsen@upenn.edu
+- GitHub: @nsinghc
+
+## Why I'm Taking This Course
+- I believe my career trajectory will be more analytical in nature, and I want to strengthen my skills. I have always wanted to know more about data science and spatial analytics, so here I am! 
