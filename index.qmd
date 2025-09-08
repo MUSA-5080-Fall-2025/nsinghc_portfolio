@@ -1,5 +1,8 @@
 ---
 title: "MUSA 5080 Portfolio"
+author: "Nina Singh Carlsen"
+date: "September 8, 2025"
+format: html
 ---
 
 # Welcome to My Portfolio
