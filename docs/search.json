@@ -1,0 +1,170 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "This portfolio documents my learning journey in Public Policy Analytics (MUSA 5080).\n\n\nAdvanced spatial analysis and data science for urban planning and public policy.\n\n\n\n\nWeekly Notes: My learning reflections and key concepts\nLabs: Completed assignments and analyses\nFinal Project: Capstone modeling challenge\n\n\n\n\n\nI am a second-year Master of City Planning student concentrating in Equity and Engagement. I have five years of housing and community engagement experience prior to coming to Penn. I am looking forward to learning more analytical skills!\n\n\n\n\n\nEmail: ncarlsen@upenn.edu\nGitHub: @nsinghc\n\n\n\n\n\nI believe my career trajectory will be more analytical in nature, and I want to strengthen my skills. I have always wanted to know more about data science and spatial analytics, so here I am!"
+  },
+  {
+    "objectID": "index.html#about-this-course",
+    "href": "index.html#about-this-course",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "Advanced spatial analysis and data science for urban planning and public policy."
+  },
+  {
+    "objectID": "index.html#portfolio-structure",
+    "href": "index.html#portfolio-structure",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "Weekly Notes: My learning reflections and key concepts\nLabs: Completed assignments and analyses\nFinal Project: Capstone modeling challenge"
+  },
+  {
+    "objectID": "index.html#about-me",
+    "href": "index.html#about-me",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "I am a second-year Master of City Planning student concentrating in Equity and Engagement. I have five years of housing and community engagement experience prior to coming to Penn. I am looking forward to learning more analytical skills!"
+  },
+  {
+    "objectID": "index.html#contact",
+    "href": "index.html#contact",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "Email: ncarlsen@upenn.edu\nGitHub: @nsinghc"
+  },
+  {
+    "objectID": "index.html#why-im-taking-this-course",
+    "href": "index.html#why-im-taking-this-course",
+    "title": "MUSA 5080 Portfolio",
+    "section": "",
+    "text": "I believe my career trajectory will be more analytical in nature, and I want to strengthen my skills. I have always wanted to know more about data science and spatial analytics, so here I am!"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html",
+    "href": "weekly-notes/week-01-notes.html",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "",
+    "text": "The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered\nGit Vs. Github\n\nGit: Version control system to track changes, can be used as a collab tool\nGitHub: Cloud hosting for git repo; back-up/share/deploy\n\nFlow:\n\nEdit files in RStudio\nCommit changes with descriptive messages\nPush to GitHub\nPortfolio updates automatically\n\nCovered GitHub, Quarto, and R/RStudio\nRepo: folder containing project files\nCommit: snapshot of work at a point in time\nPush: sending changes to GitHub cloud\nPull: getting latest changes from GitHub cloud (onto local)\nTidyverse\nTibbles vs. Data Frames\n\nTiddles is enhanced data frames\n\nshows first 10 rows by default\ndisplays column names\nfits nicely on a screen"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html#key-concepts-learned",
+    "href": "weekly-notes/week-01-notes.html#key-concepts-learned",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "",
+    "text": "The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered\nGit Vs. Github\n\nGit: Version control system to track changes, can be used as a collab tool\nGitHub: Cloud hosting for git repo; back-up/share/deploy\n\nFlow:\n\nEdit files in RStudio\nCommit changes with descriptive messages\nPush to GitHub\nPortfolio updates automatically\n\nCovered GitHub, Quarto, and R/RStudio\nRepo: folder containing project files\nCommit: snapshot of work at a point in time\nPush: sending changes to GitHub cloud\nPull: getting latest changes from GitHub cloud (onto local)\nTidyverse\nTibbles vs. Data Frames\n\nTiddles is enhanced data frames\n\nshows first 10 rows by default\ndisplays column names\nfits nicely on a screen"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html#coding-techniques",
+    "href": "weekly-notes/week-01-notes.html#coding-techniques",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Coding Techniques",
+    "text": "Coding Techniques\n\nR Functions\n\nselect; filter; mutate; summarize; group_by\n\nQuarto Functions\n\nHow to create and edit a portfolio\nText formatting (bold, italic, bold italic, code text, strikethrough, Main Header, Section Header, Subsection Header)"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html#questions-challenges",
+    "href": "weekly-notes/week-01-notes.html#questions-challenges",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Questions & Challenges",
+    "text": "Questions & Challenges\n\nWhat is the difference between data table and data frame?\nGenerally, I need better file management on RStudio\nStill a little confused about tibbles; are those just better data frames?\nDouble-check/review piping"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html#connections-to-policy",
+    "href": "weekly-notes/week-01-notes.html#connections-to-policy",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Connections to Policy",
+    "text": "Connections to Policy\n\nUsing open-source tools will be helpful in public work because you avoid licensure/acquisition\nPossibilities for open-source in the future"
+  },
+  {
+    "objectID": "weekly-notes/week-01-notes.html#reflection",
+    "href": "weekly-notes/week-01-notes.html#reflection",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Reflection",
+    "text": "Reflection\n\nI really liked the walkthrough of R syntax\nI will continue to practice ! Excited to learn more"
+  },
+  {
+    "objectID": "instructions_week1.html",
+    "href": "instructions_week1.html",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Welcome to MUSA 5080! This guide will help you set up your personal portfolio repository for the semester.\n\n\nBy the end of this setup, you’ll have: - Your own portfolio repository on GitHub - live website showcasing your work - A place to document your learning journey\n\n\n\n\nThis is what you are building: Dr. Delmelle’s sample portfolio\n\n\n\n\nBefore starting, make sure you have: - [ ] A GitHub account (create one here if needed) - [ ] Quarto installed on your computer (download here) - [ ] R and RStudio installed\n\n\n\n\n\nYou should already be in your personal repository (created when you accepted the GitHub Classroom assignment). Now let’s personalize it!\n\n\n\nClick on the _quarto.yml file\nClick the pencil icon (✏️) to edit\nChange \"Your Name - MUSA 5080 Portfolio\" to include your actual name\nExample: \"Jane Smith - MUSA 5080 Portfolio\"\nClick “Commit changes” at the bottom\n\n\n\n\n\nClick on the index.qmd file\nClick the pencil icon (✏️) to edit\nUpdate the “About Me” section with your information:\n\nYour name and background\nYour email address\nYour GitHub username\nWhy you’re taking this course\n\nClick “Commit changes”\n\n\n\n\n\nNavigate to the weekly-notes folder\nClick on week-01-notes.qmd\nClick the pencil icon (✏️) to edit\nFill in your notes from the first class\nClick “Commit changes”\n\n\n\n\n\nThis step makes your portfolio visible as a live website!\n\nGo to Settings: Click the “Settings” tab at the top of your repository\nFind Pages: Scroll down and click “Pages” in the left sidebar\nConfigure Source:\n\nSource: Select “Deploy from a branch”\nBranch: Select “main”\nFolder: Select “/ docs”\n\nSave: Click “Save”\nWait: GitHub will show a message that your site is being built (this takes 1-5 minutes)\n\n\n\n\n\nFind Your URL: After a few minutes, GitHub will show your website URL at the top of the Pages settings\n\nIt will look like: https://yourusername.github.io/repository-name\n\nVisit Your Site: Click the link to see your live portfolio!\nBookmark It: Save this URL - you’ll submit it to Canvas\n\n\n\n\n\nCopy your live website URL\nGo to the Canvas assignment\nSubmit your URL\n\n\n\n\n\nIf you want to work on your computer and see changes before publishing:\n\n\n# Replace [your-repo-url] with your actual repository URL\ngit clone [your-repo-url]\ncd [your-repository-name]\n\n\n\n# Edit your files using RStudio\n# Preview your changes:\nquarto render\nquarto preview\n\n# When ready, save your changes:\ngit add .\ngit commit -m \"Update portfolio\"\ngit push\nYour live website will automatically update when you push changes!\n\n\n\n\nEach week you’ll: 1. Create a new file: weekly-notes/week-XX-notes.qmd 2. Copy the template from week-01-notes.qmd 3. Fill in your reflections and key concepts 4. Commit and push your changes\n\n\n\n\n\n\nWait longer: GitHub Pages can take up to 10 minutes to build\nCheck Actions tab: Look for any red X marks indicating build failures\nVerify Pages settings: Make sure you selected “main” branch and “/docs” folder\n\n\n\n\n\nCheck permissions: Make sure you’re in YOUR repository, not the template\nSign in: Ensure you’re signed into GitHub\n\n\n\n\n\nCheck YAML syntax: Make sure your _quarto.yml file has proper formatting\nVerify file names: Files should end in .qmd not .md\nLook at error messages: The Actions tab will show specific error details\n\n\n\n\n\nDon’t panic! Every change is tracked in Git\nSee history: Click the “History” button on any file to see previous versions\nRevert changes: You can always go back to a previous version\n\n\n\n\n\n\nCommit often: Save your work frequently with descriptive commit messages\nUse branches: For major changes, create a new branch and merge when ready\nPreview locally: Use quarto preview to see changes before publishing\nKeep it professional: This portfolio can be shared with future employers!\nDocument everything: Good documentation is as important as good analysis\n\n\n\n\n\nQuarto Documentation\nGitHub Docs\nMarkdown Guide\nGit Tutorial\n\n\n\n\nDuring Class: - Raise your hand for immediate help - Work with classmates - collaboration is encouraged for setup!\nOutside Class: - Office Hours: Mondays 1:30-3:00 PM - Email: delmelle@design.upenn.edu - GitHub Issues: Create an issue in your repository for technical problems - Canvas Discussion: Post questions others might have too\n\n\n\nBefore submitting, make sure you’ve: - [ ] Customized _quarto.yml with your name - [ ] Updated index.qmd with your information - [ ] Completed Week 1 notes - [ ] Enabled GitHub Pages - [ ] Verified your website loads correctly - [ ] Submitted your URL to Canvas\n\nNeed help? Don’t struggle alone - reach out during office hours (mine + TAs) or in class!"
+  },
+  {
+    "objectID": "instructions_week1.html#what-youre-building",
+    "href": "instructions_week1.html#what-youre-building",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "By the end of this setup, you’ll have: - Your own portfolio repository on GitHub - live website showcasing your work - A place to document your learning journey"
+  },
+  {
+    "objectID": "instructions_week1.html#example",
+    "href": "instructions_week1.html#example",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "This is what you are building: Dr. Delmelle’s sample portfolio"
+  },
+  {
+    "objectID": "instructions_week1.html#prerequisites",
+    "href": "instructions_week1.html#prerequisites",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Before starting, make sure you have: - [ ] A GitHub account (create one here if needed) - [ ] Quarto installed on your computer (download here) - [ ] R and RStudio installed"
+  },
+  {
+    "objectID": "instructions_week1.html#step-by-step-setup",
+    "href": "instructions_week1.html#step-by-step-setup",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "You should already be in your personal repository (created when you accepted the GitHub Classroom assignment). Now let’s personalize it!\n\n\n\nClick on the _quarto.yml file\nClick the pencil icon (✏️) to edit\nChange \"Your Name - MUSA 5080 Portfolio\" to include your actual name\nExample: \"Jane Smith - MUSA 5080 Portfolio\"\nClick “Commit changes” at the bottom\n\n\n\n\n\nClick on the index.qmd file\nClick the pencil icon (✏️) to edit\nUpdate the “About Me” section with your information:\n\nYour name and background\nYour email address\nYour GitHub username\nWhy you’re taking this course\n\nClick “Commit changes”\n\n\n\n\n\nNavigate to the weekly-notes folder\nClick on week-01-notes.qmd\nClick the pencil icon (✏️) to edit\nFill in your notes from the first class\nClick “Commit changes”\n\n\n\n\n\nThis step makes your portfolio visible as a live website!\n\nGo to Settings: Click the “Settings” tab at the top of your repository\nFind Pages: Scroll down and click “Pages” in the left sidebar\nConfigure Source:\n\nSource: Select “Deploy from a branch”\nBranch: Select “main”\nFolder: Select “/ docs”\n\nSave: Click “Save”\nWait: GitHub will show a message that your site is being built (this takes 1-5 minutes)\n\n\n\n\n\nFind Your URL: After a few minutes, GitHub will show your website URL at the top of the Pages settings\n\nIt will look like: https://yourusername.github.io/repository-name\n\nVisit Your Site: Click the link to see your live portfolio!\nBookmark It: Save this URL - you’ll submit it to Canvas\n\n\n\n\n\nCopy your live website URL\nGo to the Canvas assignment\nSubmit your URL"
+  },
+  {
+    "objectID": "instructions_week1.html#working-on-your-portfolio-locally-optional-but-recommended",
+    "href": "instructions_week1.html#working-on-your-portfolio-locally-optional-but-recommended",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "If you want to work on your computer and see changes before publishing:\n\n\n# Replace [your-repo-url] with your actual repository URL\ngit clone [your-repo-url]\ncd [your-repository-name]\n\n\n\n# Edit your files using RStudio\n# Preview your changes:\nquarto render\nquarto preview\n\n# When ready, save your changes:\ngit add .\ngit commit -m \"Update portfolio\"\ngit push\nYour live website will automatically update when you push changes!"
+  },
+  {
+    "objectID": "instructions_week1.html#weekly-workflow",
+    "href": "instructions_week1.html#weekly-workflow",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Each week you’ll: 1. Create a new file: weekly-notes/week-XX-notes.qmd 2. Copy the template from week-01-notes.qmd 3. Fill in your reflections and key concepts 4. Commit and push your changes"
+  },
+  {
+    "objectID": "instructions_week1.html#troubleshooting",
+    "href": "instructions_week1.html#troubleshooting",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Wait longer: GitHub Pages can take up to 10 minutes to build\nCheck Actions tab: Look for any red X marks indicating build failures\nVerify Pages settings: Make sure you selected “main” branch and “/docs” folder\n\n\n\n\n\nCheck permissions: Make sure you’re in YOUR repository, not the template\nSign in: Ensure you’re signed into GitHub\n\n\n\n\n\nCheck YAML syntax: Make sure your _quarto.yml file has proper formatting\nVerify file names: Files should end in .qmd not .md\nLook at error messages: The Actions tab will show specific error details\n\n\n\n\n\nDon’t panic! Every change is tracked in Git\nSee history: Click the “History” button on any file to see previous versions\nRevert changes: You can always go back to a previous version"
+  },
+  {
+    "objectID": "instructions_week1.html#pro-tips",
+    "href": "instructions_week1.html#pro-tips",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Commit often: Save your work frequently with descriptive commit messages\nUse branches: For major changes, create a new branch and merge when ready\nPreview locally: Use quarto preview to see changes before publishing\nKeep it professional: This portfolio can be shared with future employers!\nDocument everything: Good documentation is as important as good analysis"
+  },
+  {
+    "objectID": "instructions_week1.html#additional-resources",
+    "href": "instructions_week1.html#additional-resources",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Quarto Documentation\nGitHub Docs\nMarkdown Guide\nGit Tutorial"
+  },
+  {
+    "objectID": "instructions_week1.html#getting-help",
+    "href": "instructions_week1.html#getting-help",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "During Class: - Raise your hand for immediate help - Work with classmates - collaboration is encouraged for setup!\nOutside Class: - Office Hours: Mondays 1:30-3:00 PM - Email: delmelle@design.upenn.edu - GitHub Issues: Create an issue in your repository for technical problems - Canvas Discussion: Post questions others might have too"
+  },
+  {
+    "objectID": "instructions_week1.html#checklist",
+    "href": "instructions_week1.html#checklist",
+    "title": "Portfolio Setup Instructions",
+    "section": "",
+    "text": "Before submitting, make sure you’ve: - [ ] Customized _quarto.yml with your name - [ ] Updated index.qmd with your information - [ ] Completed Week 1 notes - [ ] Enabled GitHub Pages - [ ] Verified your website loads correctly - [ ] Submitted your URL to Canvas\n\nNeed help? Don’t struggle alone - reach out during office hours (mine + TAs) or in class!"
+  }
+]
