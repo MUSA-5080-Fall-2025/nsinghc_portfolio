@@ -1,11 +1,15 @@
 ---
 title: "Week 1 Notes - Course Introduction"
+author: "Nina Singh Carlsen"
 date: "2025-09-08"
+---
+
+format: html
 ---
 
 ## Key Concepts Learned
 - The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered
-- Git Vs. Github
+  - Git Vs. Github
   - Git: Version control system to track changes, can be used as a collab tool
   - GitHub: Cloud hosting for git repo; back-up/share/deploy
 - Flow: 
