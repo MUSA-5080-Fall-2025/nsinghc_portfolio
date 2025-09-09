@@ -10,7 +10,7 @@ website:
         text: Home
       - text: Weekly Notes
         menu:
-          - href: weekly-notes/notes_week1.qmd
+          - href: weekly-notes/week-01-notes.qmd
             text: Week 1
 
 format:
