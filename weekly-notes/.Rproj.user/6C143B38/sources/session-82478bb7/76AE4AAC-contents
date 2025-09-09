@@ -1,5 +1,5 @@
 ---
-  title: "Week 1 Notes - Course Introduction"
+title: "Week 1 Notes - Course Introduction"
 author: "Nina Singh Carlsen"
 date: "2025-09-08"
 format: html
