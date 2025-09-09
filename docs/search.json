@@ -166,5 +166,40 @@
     "title": "Portfolio Setup Instructions",
     "section": "",
     "text": "Before submitting, make sure you’ve: - [ ] Customized _quarto.yml with your name - [ ] Updated index.qmd with your information - [ ] Completed Week 1 notes - [ ] Enabled GitHub Pages - [ ] Verified your website loads correctly - [ ] Submitted your URL to Canvas\n\nNeed help? Don’t struggle alone - reach out during office hours (mine + TAs) or in class!"
+  },
+  {
+    "objectID": "weekly-notes/notes_week1.html",
+    "href": "weekly-notes/notes_week1.html",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "",
+    "text": "## Key Concepts Learned - The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered - Git Vs. Github - Git: Version control system to track changes, can be used as a collab tool - GitHub: Cloud hosting for git repo; back-up/share/deploy - Flow: - Edit files in RStudio - Commit changes with descriptive messages - Push to GitHub - Portfolio updates automatically - Covered GitHub, Quarto, and R/RStudio - Repo: folder containing project files - Commit: snapshot of work at a point in time - Push: sending changes to GitHub cloud - Pull: getting latest changes from GitHub cloud (onto local) - Tidyverse - Tibbles vs. Data Frames - Tiddles is enhanced data frames - shows first 10 rows by default - displays column names - fits nicely on a screen"
+  },
+  {
+    "objectID": "weekly-notes/notes_week1.html#coding-techniques",
+    "href": "weekly-notes/notes_week1.html#coding-techniques",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Coding Techniques",
+    "text": "Coding Techniques\n\nR Functions\nselect; filter; mutate; summarize; group_by\nQuarto Functions\nHow to create and edit a portfolio\nText formatting (bold, italic, bold italic, code text, strikethrough, Main Header, Section Header, Subsection Header)"
+  },
+  {
+    "objectID": "weekly-notes/notes_week1.html#questions-challenges",
+    "href": "weekly-notes/notes_week1.html#questions-challenges",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Questions & Challenges",
+    "text": "Questions & Challenges\n\nWhat is the difference between data table and data frame?\n\nGenerally, I need better file management on RStudio\n\nStill a little confused about tibbles; are those just better data frames?\n\nDouble-check/review piping"
+  },
+  {
+    "objectID": "weekly-notes/notes_week1.html#connections-to-policy",
+    "href": "weekly-notes/notes_week1.html#connections-to-policy",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Connections to Policy",
+    "text": "Connections to Policy\n\nUsing open-source tools will be helpful in public work because you avoid licensure/acquisition\nPossibilities for open-source in the future"
+  },
+  {
+    "objectID": "weekly-notes/notes_week1.html#reflection",
+    "href": "weekly-notes/notes_week1.html#reflection",
+    "title": "Week 1 Notes - Course Introduction",
+    "section": "Reflection",
+    "text": "Reflection\n\nI really liked the walkthrough of R syntax\nI will continue to practice ! Excited to learn more"
   }
 ]
