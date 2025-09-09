@@ -2,11 +2,31 @@
 title: "Week 1 Notes - Course Introduction"
 author: "Nina Singh Carlsen"
 date: "2025-09-08"
----
-
 format: html
 ---
+project:
+  type: website
+  output-dir: docs
 
+website:
+  title: "Your name - MUSA 5080 Portfolio"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - text: Weekly Notes 
+        menu:
+          - href: weekly-notes/week-01-notes.qmd
+            text: Week 1
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+
+execute:
+  freeze: auto
+  
 ## Key Concepts Learned
 - The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered
   - Git Vs. Github

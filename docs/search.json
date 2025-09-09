@@ -4,7 +4,7 @@
     "href": "weekly-notes/week-01-notes.html",
     "title": "Week 1 Notes - Course Introduction",
     "section": "",
-    "text": "The goal of public policy analytics, as opposed to the private sector, is not necessarily optimization. There are tradeoffs and context that need to be considered\n\nGit Vs. Github\nGit: Version control system to track changes, can be used as a collab tool\nGitHub: Cloud hosting for git repo; back-up/share/deploy\n\nFlow:\n\nEdit files in RStudio\nCommit changes with descriptive messages\nPush to GitHub\nPortfolio updates automatically\n\nCovered GitHub, Quarto, and R/RStudio\nRepo: folder containing project files\nCommit: snapshot of work at a point in time\nPush: sending changes to GitHub cloud\nPull: getting latest changes from GitHub cloud (onto local)\nTidyverse\nTibbles vs. Data Frames\n\nTiddles is enhanced data frames\n\nshows first 10 rows by default\ndisplays column names\nfits nicely on a screen"
+    "text": "project: type: website output-dir: docs\nwebsite: title: “Your name - MUSA 5080 Portfolio” navbar: left: - href: index.qmd text: Home - text: Weekly Notes menu: - href: weekly-notes/week-01-notes.qmd text: Week 1 format: html: theme: cosmo toc: true code-fold: true\nexecute: freeze: auto"
   },
   {
     "objectID": "weekly-notes/week-01-notes.html#key-concepts-learned",
