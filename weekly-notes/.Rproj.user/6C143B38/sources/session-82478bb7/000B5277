@@ -3,7 +3,7 @@
     "path": "~/GitHub/portfolio-setup-nsinghc/_quarto.yml",
     "project_path": null,
     "type": "yaml",
-    "hash": "3784499793",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1757450485312.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "12,44",
+        "cursorPosition": "17,16",
         "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1757451109,
+    "lastKnownWriteTime": 1757451435,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1757451109070,
+    "last_content_update": 1757451435998,
     "read_only": false,
     "read_only_alternatives": []
 }
