@@ -1,6 +1,6 @@
 {
     "id": "99D1EF36",
-    "path": "~/GitHub/portfolio-setup-nsinghc/weekly-notes/week-01-notes.qmd",
+    "path": "~/GitHub/nsinghc_portfolio/weekly-notes/week-01-notes.qmd",
     "project_path": "week-01-notes.qmd",
     "type": "quarto_markdown",
     "hash": "0",
@@ -11,14 +11,16 @@
     "relative_order": 4,
     "properties": {
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "0,0",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1757449975,
+    "lastKnownWriteTime": 1757520720,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1757449975,
+    "last_content_update": 1757520720,
     "read_only": false,
     "read_only_alternatives": []
 }
