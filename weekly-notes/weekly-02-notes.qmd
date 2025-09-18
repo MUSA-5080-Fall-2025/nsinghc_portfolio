@@ -1,6 +1,8 @@
 ---
 title: "Week 2 Notes - Algorithmic Decision Making & Census Data"
+author: "Nina Singh Carlsen"
 date: "2025-09-15"
+format: html
 ---
   
 ## Key Concepts Learned
