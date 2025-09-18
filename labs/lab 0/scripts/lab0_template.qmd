@@ -35,7 +35,7 @@ library(tidyverse)
 
 # Read in the car sales data
 # Make sure the data file is in your lab_0/data/ folder
-car_data <- read_csv("C:/Users/ninac/OneDrive/Documents/GitHub/nsinghc_portfolio/labs/lab 0/scripts/car_sales_data.csv")
+car_data <- read_csv("../data/car_sales_data.csv")
 ```
 
 # Exercise 1: Getting to Know Your Data
@@ -141,7 +141,7 @@ select(car_data, Model, year, age, Mileage, mileage_per_year)
 
 ```{r categorize-cars}
 # Create a price_category column where if price is < 15000, its is coded as budget, between 15000 and 30000 is midrange and greater than 30000 is mid-range (use case_when)
-car_data <- car_data %>% 
+
   
 
 # Check your categories select the new column and show it
