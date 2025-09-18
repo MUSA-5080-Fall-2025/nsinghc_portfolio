@@ -201,5 +201,47 @@
     "title": "Week 1 Notes - Course Introduction",
     "section": "Reflection",
     "text": "Reflection\n\nI really liked the walkthrough of R syntax\nI will continue to practice ! Excited to learn more"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html",
+    "href": "weekly-notes/weekly-02-notes.html",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "",
+    "text": "Algorithms are a set of instructions - computer program that processes data to make decisions\nIn government, use systems to assist human decision-making - inputs and outputs\nInputs: features, predictors, independent variables, x\nOutputs: labels, outcomes, dependent variables, y\nReal world examples: criminal justice/recidivism; housing/finance; healthcare\nCollecting proxies for decision output and leverage external data sources for those proxies\n“Statistical determinism”: making at-scale models my miss details\nHistorical data bias\nThe goal is consistent decision-making\nTerms: data science, data analytics, machine learning, artificial intelligence\nPublic sector context: civic registration systems, census data, admin records, operations research post WWII\nWhat’s new: more data (official and accidental), focus on prediction versus explanation, harder to interpret and explain\nGovernments use algorithms because it’s batch processing and more efficient: efficient, objective, consistent, cost-saving\nData analytics is subjective - each step requires human choices\nData cleaning decisions; data coding and classification; data collection; use of imperfect proxies; how you interpret results; what variables are put into the model\nChoices embed human values and biases\nHealthcare algorithm bias: algorithm used to identify high-risk patients for additional care systematically discriminated against Black patients\n\nAlgorithm used healthcare costs as a proxy for need\nBlack patients typically incur lower costs due to systemic inequities in access\nResult: Black patients under prioritized despite equivolent levels of illness\n\nCriminal justice algorithm bias: 2x as likely to flag Black defendants as high-risk, reflecting biased policing patterns (Black individuals were more likely to show up in the database)"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html#key-concepts-learned",
+    "href": "weekly-notes/weekly-02-notes.html#key-concepts-learned",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "",
+    "text": "Algorithms are a set of instructions - computer program that processes data to make decisions\nIn government, use systems to assist human decision-making - inputs and outputs\nInputs: features, predictors, independent variables, x\nOutputs: labels, outcomes, dependent variables, y\nReal world examples: criminal justice/recidivism; housing/finance; healthcare\nCollecting proxies for decision output and leverage external data sources for those proxies\n“Statistical determinism”: making at-scale models my miss details\nHistorical data bias\nThe goal is consistent decision-making\nTerms: data science, data analytics, machine learning, artificial intelligence\nPublic sector context: civic registration systems, census data, admin records, operations research post WWII\nWhat’s new: more data (official and accidental), focus on prediction versus explanation, harder to interpret and explain\nGovernments use algorithms because it’s batch processing and more efficient: efficient, objective, consistent, cost-saving\nData analytics is subjective - each step requires human choices\nData cleaning decisions; data coding and classification; data collection; use of imperfect proxies; how you interpret results; what variables are put into the model\nChoices embed human values and biases\nHealthcare algorithm bias: algorithm used to identify high-risk patients for additional care systematically discriminated against Black patients\n\nAlgorithm used healthcare costs as a proxy for need\nBlack patients typically incur lower costs due to systemic inequities in access\nResult: Black patients under prioritized despite equivolent levels of illness\n\nCriminal justice algorithm bias: 2x as likely to flag Black defendants as high-risk, reflecting biased policing patterns (Black individuals were more likely to show up in the database)"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html#coding-techniques",
+    "href": "weekly-notes/weekly-02-notes.html#coding-techniques",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "Coding Techniques",
+    "text": "Coding Techniques\n\nSummarize\nMutate\nSelect\nFilter\nGlimpse\nName/Rename\nCreating new data frames/tibbles"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html#questions-challenges",
+    "href": "weekly-notes/weekly-02-notes.html#questions-challenges",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "Questions & Challenges",
+    "text": "Questions & Challenges\n\nGenerally struggling with syntax when I want to manipulate data\nWhen do I rename things, when do I make a new data frame, etc.?"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html#connections-to-policy",
+    "href": "weekly-notes/weekly-02-notes.html#connections-to-policy",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "Connections to Policy",
+    "text": "Connections to Policy\n\nAlgorithms that interact with policy are important but also vulnerable to human biases\nCare must be taken to factor in the correct variables, identify sound proxies etc.\nHarm can be done if algorithms are seen and used as totally objective, rather than a decision-making tool"
+  },
+  {
+    "objectID": "weekly-notes/weekly-02-notes.html#reflection",
+    "href": "weekly-notes/weekly-02-notes.html#reflection",
+    "title": "Week 2 Notes - Algorithmic Decision Making & Census Data",
+    "section": "Reflection",
+    "text": "Reflection\n\nNeed to finish Lab 0 to fully internalize the coding exercise from this week & review syntax"
   }
 ]
