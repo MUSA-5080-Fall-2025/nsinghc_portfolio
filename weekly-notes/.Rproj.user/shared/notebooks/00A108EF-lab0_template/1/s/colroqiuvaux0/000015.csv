@@ -1,0 +1,4 @@
+"0",""
+"0","# Convert to regular data frame and display"
+"0","car_df <- as.data.frame(car_data)"
+"0","car_df"

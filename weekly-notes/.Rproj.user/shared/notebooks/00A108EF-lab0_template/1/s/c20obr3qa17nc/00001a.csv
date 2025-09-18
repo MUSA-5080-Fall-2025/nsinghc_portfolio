@@ -1,0 +1,16 @@
+"0","# Check that it worked
+names(car_data)
+"
+"1","[1]"
+"1"," ""Manufacturer"""
+"1"," ""Model""       "
+"1"," ""Engine size"" "
+"1"," ""Fuel type""   "
+"1"," ""year""        "
+"1","
+"
+"1","[6]"
+"1"," ""Mileage""     "
+"1"," ""Price""       "
+"1","
+"

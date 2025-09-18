@@ -1,0 +1,8 @@
+"0","# Use glimpse() to see the data structure"
+"0",""
+"0",""
+"0","# Check the column names"
+"0",""
+"0",""
+"0","# Look at the first few rows"
+"0","head(car_data)"
