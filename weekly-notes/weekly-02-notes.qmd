@@ -1,0 +1,50 @@
+---
+title: "Week 2 Notes - Algorithmic Decision Making & Census Data"
+author: "Nina Singh Carlsen"
+date: "2025-09-15"
+format: html
+---
+  
+## Key Concepts Learned
+- Algorithms are a set of instructions - computer program that processes data to make decisions
+- In government, use systems to assist human decision-making - inputs and outputs
+- Inputs: features, predictors, independent variables, x
+- Outputs: labels, outcomes, dependent variables, y
+- Real world examples: criminal justice/recidivism; housing/finance; healthcare
+- Collecting proxies for decision output and leverage external data sources for those proxies
+- "Statistical determinism": making at-scale models my miss details 
+- Historical data bias
+- The goal is consistent decision-making
+- Terms: data science, data analytics, machine learning, artificial intelligence
+- Public sector context: civic registration systems, census data, admin records, operations research post WWII
+- What's new: more data (official and accidental), focus on prediction versus explanation, harder to interpret and explain
+- Governments use algorithms because it's batch processing and more efficient: efficient, objective, consistent, cost-saving
+- Data analytics is subjective - each step requires human choices
+- Data cleaning decisions; data coding and classification; data collection; use of imperfect proxies; how you interpret results; what variables are put into the model
+- Choices embed human values and biases
+- Healthcare algorithm bias: algorithm used to identify high-risk patients for additional care systematically discriminated against Black patients 
+  - Algorithm used healthcare costs as a proxy for need
+  - Black patients typically incur lower costs due to systemic inequities in access
+  - Result: Black patients under prioritized despite equivolent levels of illness
+- Criminal justice algorithm bias: 2x as likely to flag Black defendants as high-risk, reflecting biased policing patterns (Black individuals were more likely to show up in the database)
+
+## Coding Techniques
+- Summarize
+- Mutate
+- Select
+- Filter
+- Glimpse
+- Name/Rename
+- Creating new data frames/tibbles
+
+## Questions & Challenges
+- Generally struggling with syntax when I want to manipulate data
+- When do I rename things, when do I make a new data frame, etc.? 
+
+## Connections to Policy
+- Algorithms that interact with policy are important but also vulnerable to human biases
+- Care must be taken to factor in the correct variables, identify sound proxies etc. 
+- Harm can be done if algorithms are seen and used as totally objective, rather than a decision-making tool
+
+## Reflection
+- Need to finish Lab 0 to fully internalize the coding exercise from this week & review syntax

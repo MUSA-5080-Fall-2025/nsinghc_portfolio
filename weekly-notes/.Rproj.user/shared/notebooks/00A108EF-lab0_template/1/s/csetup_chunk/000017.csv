@@ -1,0 +1,14 @@
+"0","# Load the tidyverse library"
+"0","library(tidyverse)"
+"0",""
+"0","# Read in the car sales data"
+"0","# Make sure the data file is in your lab_0/data/ folder"
+"0","car_data <- read_csv(""C:/Users/ninac/OneDrive/Documents/GitHub/nsinghc_portfolio/labs/lab 0/scripts/car_sales_data.csv"")"
+"2","[1mRows: [22m[34m50000[39m [1mColumns: [22m[34m7[39m"
+"2","[36m──[39m [1mColumn specification[22m [36m──────────────────────────────────────────────────────────────[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (3): Manufacturer, Model, Fuel type
+[32mdbl[39m (4): Engine size, Year of manufacture, Mileage, Price"
+"2","
+[36mℹ[39m Use `spec()` to retrieve the full column specification for this data.
+[36mℹ[39m Specify the column types or set `show_col_types = FALSE` to quiet this message."
