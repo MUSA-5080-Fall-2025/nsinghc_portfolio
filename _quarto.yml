@@ -13,6 +13,7 @@ website:
           - href: weekly-notes/week-01-notes.html
             text: Week 1
           - href: weekly-notes/week-02-notes.html
+            text: Week 2
 
 format:
   html:
