@@ -16,6 +16,10 @@ website:
             text: Week 1
           - href: weekly-notes/week-02-notes.html
             text: Week 2 
+      - text: Labs
+        menu:
+          - href: labs/Assignment1_NSC.html
+            text: Lab 1
 
 format:
   html:
