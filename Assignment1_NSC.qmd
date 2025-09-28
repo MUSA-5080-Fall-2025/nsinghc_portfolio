@@ -1,8 +1,17 @@
 ---
-title: "Assignment1_Attempt1"
+title: "Assignment 1: Census Data Quality for Policy Decisions"
+subtitle: "Evaluating Data Reliability for Algorithmic Decision-Making"
 author: "Nina Carlsen"
-format: html
-editor: visual
+date: today
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-location: left
+    code-fold: false
+execute:
+  warning: false
+  message: false
 ---
 
 ## Executive Summary
