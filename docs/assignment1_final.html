@@ -120,13 +120,7 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#middlesex-where-im-from-has-the-lowest-percentage" id="toc-middlesex-where-im-from-has-the-lowest-percentage" class="nav-link active" data-scroll-target="#middlesex-where-im-from-has-the-lowest-percentage">Middlesex, where I’m from, has the lowest percentage</a></li>
-  </ul>
-</nav>
+    
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
@@ -167,55 +161,32 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>library(tidyverse) library(tidycensus) library(knitr)</p>
-<p>census_api_key(Sys.getenv(“e195d3b46a99d2c4f9250dbc870202be7aaf8a2b”)) install = TRUE</p>
-<p>my_state = “New Jersey”</p>
-<p>acs_vars_2022 &lt;- load_variables(2022, “acs5”, cache = TRUE)</p>
-<p>nj_data &lt;- get_acs( geography = “county”, variables = c( total_pop = “B01003_001”, median_income = “B19013_001” ), state = “NJ”, year = 2022, output = “wide”<br>
-)</p>
-<p>head(nj_data)</p>
-<p>nj_clean &lt;- nj_data %&gt;% mutate( county_name = str_remove(NAME, “, New Jersey”), county_name = str_remove(county_name, ” County”) )</p>
-<p>head(nj_clean)</p>
-<p>nj_reliability &lt;- nj_clean %&gt;% mutate( moe_percentage = round((median_incomeM / median_incomeE) * 100, 2),</p>
-<pre><code>reliability = case_when(
-  moe_percentage &lt; 5 ~ "High Confidence",
-  moe_percentage &gt;= 5 &amp; moe_percentage &lt;= 10 ~ "Moderate",
-  moe_percentage &gt; 10 ~ "Low Confidence"
-)</code></pre>
-<p>)</p>
-<p>count(nj_reliability, reliability)</p>
-<p>library(dplyr) library(knitr)</p>
-<p>nj_reliability %&gt;% mutate( moe_pct = 100 * median_incomeM / median_incomeE ) %&gt;% arrange(desc(moe_pct)) %&gt;% slice_head(n = 5) %&gt;% select( county_name, median_income = median_incomeE, margin_of_error = median_incomeM, moe_pct, reliability ) %&gt;% mutate(<code>MOE %</code> = paste0(round(moe_pct, 2), “%”)) %&gt;% select(-moe_pct) %&gt;%<br>
-knitr::kable( caption = “Top 5 NJ Counties with Highest MOE Percentage”, col.names = c(“County”, “Median Income”, “Margin of Error”, “MOE %”, “Reliability Category”) )</p>
-<p>selected_counties &lt;- nj_reliability %&gt;% filter(county_name %in% c( “Somerset”, “Essex”, “Middlesex” )) %&gt;% mutate(moe_pct = 100 * median_incomeM / median_incomeE) %&gt;% select( county_name, median_income = median_incomeE, moe_pct, reliability ) %&gt;% mutate(<code>MOE %</code> = paste0(round(moe_pct, 2), “%”)) %&gt;% select(-moe_pct)</p>
-<p>knitr::kable( selected_counties, caption = “Selected Counties for Tract-Level Study”, col.names = c(“County”, “Median Income”, “MOE %”, “Reliability Category”) )</p>
-<section id="middlesex-where-im-from-has-the-lowest-percentage" class="level1">
-<h1>Middlesex, where I’m from, has the lowest percentage</h1>
-<p>my_state &lt;- “New Jersey” my_year &lt;- 2022</p>
+<p>library(tidyverse) library(tidycensus) library(knitr) library(stringr)</p>
+<p>census_api_key(Sys.getenv(“e195d3b46a99d2c4f9250dbc870202be7aaf8a2b”), install = FALSE, overwrite = FALSE)</p>
+<p>my_state &lt;- “NJ” my_year &lt;- 2022</p>
+<p>nj_data &lt;- get_acs( geography = “county”, variables = c(total_pop = “B01003_001”, median_income = “B19013_001”), state = my_state, year = my_year, output = “wide” )</p>
+<p>nj_reliability &lt;- nj_data %&gt;% mutate( county_name = NAME %&gt;% str_remove(“, New Jersey”) %&gt;% str_remove(” County”), moe_percentage = 100 * median_incomeM / median_incomeE, reliability = case_when( moe_percentage &lt; 5 ~ “High Confidence”, moe_percentage &lt;= 10 ~ “Moderate”, moe_percentage &gt; 10 ~ “Low Confidence” ) )</p>
+<p>top5 &lt;- nj_reliability %&gt;% mutate(moe_pct = 100 * median_incomeM / median_incomeE) %&gt;% arrange(desc(moe_pct)) %&gt;% slice_head(n = 5) %&gt;% transmute( county_name, median_income = median_incomeE, margin_of_error = median_incomeM, <code>MOE %</code> = sprintf(“%.2f%%”, moe_pct), <code>Reliability Category</code> = reliability )</p>
+<p>knitr::kable(top5, caption = “Top 5 NJ Counties with Highest MOE Percentage”, col.names = c(“County”, “Median Income”, “Margin of Error”, “MOE %”, “Reliability Category”), format.args = list(big.mark = “,”) )</p>
+<p>selected_counties &lt;- nj_reliability %&gt;% filter(county_name %in% c(“Somerset”, “Essex”, “Middlesex”)) %&gt;% mutate(moe_pct = 100 * median_incomeM / median_incomeE) %&gt;% transmute( county_name, median_income = median_incomeE, <code>MOE %</code> = sprintf(“%.2f%%”, moe_pct), <code>Reliability Category</code> = reliability )</p>
+<p>knitr::kable(selected_counties, caption = “Selected Counties for Tract-Level Study”, col.names = c(“County”, “Median Income”, “MOE %”, “Reliability Category”), format.args = list(big.mark = “,”) )</p>
 <p>race_vars &lt;- c( total = “B03002_001”, white = “B03002_003”, black = “B03002_004”, hispanic = “B03002_012” )</p>
-<p>tract_demo &lt;- get_acs( geography = “tract”, state = my_state, county = c(“035”,“013”,“023”), year = my_year, variables = race_vars, output = “wide” )</p>
-<p>nj_counties &lt;- tidycensus::fips_codes %&gt;% filter(state_code == “34”) %&gt;% # NJ = 34 distinct(county_code, county) %&gt;% rename(county_name = county)</p>
-<p>tract_demo &lt;- tract_demo %&gt;% mutate(county_code = substr(GEOID, 3, 5)) %&gt;% left_join(nj_counties, by = “county_code”) %&gt;% select(-county_code)</p>
-<p>tract_demo &lt;- tract_demo %&gt;% mutate( pct_white = if_else(totalE &gt; 0, 100 * whiteE / totalE, NA_real_), pct_black = if_else(totalE &gt; 0, 100 * blackE / totalE, NA_real_), pct_hispanic = if_else(totalE &gt; 0, 100 * hispanicE / totalE, NA_real_) )</p>
-<p>top_hispanic_tract &lt;- tract_demo %&gt;% filter(!is.na(pct_hispanic)) %&gt;% arrange(desc(pct_hispanic)) %&gt;% slice_head(n = 1) %&gt;% select(NAME, pct_hispanic) %&gt;% mutate(<code>Hispanic %</code> = sprintf(“%.2f%%”, pct_hispanic))</p>
-<p>knitr::kable( top_hispanic_tract, caption = “Tract with Highest Percent Hispanic/Latino (Selected NJ Counties)”, col.names = c(“Tract”, “County”, “Hispanic %”) )</p>
-<p>county_avgs &lt;- tract_demo %&gt;% group_by(county_name) %&gt;% summarise( n_tracts = n(), avg_white = mean(pct_white, na.rm = TRUE), avg_black = mean(pct_black, na.rm = TRUE), avg_hispanic = mean(pct_hispanic, na.rm = TRUE), .groups = “drop” ) %&gt;% arrange(desc(avg_hispanic))</p>
-<p>county_avgs_fmt &lt;- county_avgs %&gt;% mutate( <code>Avg White %</code> = sprintf(“%.2f%%”, avg_white), <code>Avg Black %</code> = sprintf(“%.2f%%”, avg_black), <code>Avg Hispanic %</code> = sprintf(“%.2f%%”, avg_hispanic) ) %&gt;% select(county_name, n_tracts, <code>Avg White %</code>, <code>Avg Black %</code>, <code>Avg Hispanic %</code>)</p>
-<p>knitr::kable( county_avgs_fmt, caption = “Average Tract Demographics by County (Percent of Total Population)”, col.names = c(“County”, “# Tracts”, “Avg White %”, “Avg Black %”, “Avg Hispanic %”) )</p>
-<p>demographic_moe &lt;- tract_demo %&gt;% mutate( white_moe_pct = if_else(whiteE &gt; 0, 100 * whiteM / whiteE, NA_real_), black_moe_pct = if_else(blackE &gt; 0, 100 * blackM / blackE, NA_real_), hispanic_moe_pct = if_else(hispanicE &gt; 0, 100 * hispanicM / hispanicE, NA_real_), high_moe_flag = (white_moe_pct &gt; 15) | (black_moe_pct &gt; 15) | (hispanic_moe_pct &gt; 15) )</p>
-<p>demographic_moe &lt;- tract_demo %&gt;% mutate( white_moe_pct = if_else(whiteE &gt; 0, 100 * whiteM / whiteE, NA_real_), black_moe_pct = if_else(blackE &gt; 0, 100 * blackM / blackE, NA_real_), hispanic_moe_pct = if_else(hispanicE &gt; 0, 100 * hispanicM / hispanicE, NA_real_),</p>
-<pre><code>any_high_moe = pmax(white_moe_pct, black_moe_pct, hispanic_moe_pct, na.rm = TRUE) &gt; 15</code></pre>
-<p>)</p>
+<p>tract_demo &lt;- get_acs( geography = “tract”, state = my_state, county = c(“035”, “013”, “023”), year = my_year, variables = race_vars, output = “wide” )</p>
+<p>nj_counties &lt;- tidycensus::fips_codes %&gt;% filter(state_code == “34”) %&gt;% distinct(county_code, county) %&gt;% rename(county_name = county)</p>
+<p>tract_demo &lt;- tract_demo %&gt;% mutate(county_code = substr(GEOID, 3, 5)) %&gt;% left_join(nj_counties, by = “county_code”) %&gt;% select(-county_code) %&gt;% mutate( pct_white = if_else(totalE &gt; 0, 100 * whiteE / totalE, NA_real_), pct_black = if_else(totalE &gt; 0, 100 * blackE / totalE, NA_real_), pct_hispanic = if_else(totalE &gt; 0, 100 * hispanicE / totalE, NA_real_) )</p>
+<p>top_hispanic_tract &lt;- tract_demo %&gt;% filter(!is.na(pct_hispanic)) %&gt;% arrange(desc(pct_hispanic)) %&gt;% slice_head(n = 1) %&gt;% transmute( Tract = NAME, County = county_name, <code>Hispanic %</code> = sprintf(“%.2f%%”, pct_hispanic) )</p>
+<p>knitr::kable(top_hispanic_tract, caption = “Tract with Highest Percent Hispanic/Latino (Selected NJ Counties)” )</p>
+<p>county_avgs &lt;- tract_demo %&gt;% group_by(county_name) %&gt;% summarise( n_tracts = n(), avg_white = mean(pct_white, na.rm = TRUE), avg_black = mean(pct_black, na.rm = TRUE), avg_hispanic = mean(pct_hispanic, na.rm = TRUE), .groups = “drop” ) %&gt;% arrange(desc(avg_hispanic)) %&gt;% transmute( county_name, n_tracts, <code>Avg White %</code> = sprintf(“%.2f%%”, avg_white), <code>Avg Black %</code> = sprintf(“%.2f%%”, avg_black), <code>Avg Hispanic %</code> = sprintf(“%.2f%%”, avg_hispanic) )</p>
+<p>knitr::kable(county_avgs, caption = “Average Tract Demographics by County (Simple Averages of Tract %s)”, col.names = c(“County”, “# Tracts”, “Avg White %”, “Avg Black %”, “Avg Hispanic %”) )</p>
+<p>demographic_moe &lt;- tract_demo %&gt;% mutate( white_moe_pct = if_else(whiteE &gt; 0, 100 * whiteM / whiteE, NA_real_), black_moe_pct = if_else(blackE &gt; 0, 100 * blackM / blackE, NA_real_), hispanic_moe_pct = if_else(hispanicE &gt; 0, 100 * hispanicM / hispanicE, NA_real_), any_high_moe = pmax(white_moe_pct, black_moe_pct, hispanic_moe_pct, na.rm = TRUE) &gt; 15 )</p>
 <p>overall_moe_summary &lt;- demographic_moe %&gt;% summarise( total_tracts = n(), tracts_high_moe = sum(any_high_moe, na.rm = TRUE), pct_high_moe = 100 * tracts_high_moe / total_tracts, avg_white_moe = mean(white_moe_pct, na.rm = TRUE), avg_black_moe = mean(black_moe_pct, na.rm = TRUE), avg_hispanic_moe = mean(hispanic_moe_pct, na.rm = TRUE) )</p>
-<p>knitr::kable( overall_moe_summary, caption = “Overall MOE Summary (Tract-Level)”, col.names = c(“Total Tracts”, “Tracts with High MOE (&gt;15%)”, “% High MOE”, “Avg White MOE %”, “Avg Black MOE %”, “Avg Hispanic MOE %”) )</p>
+<p>knitr::kable(overall_moe_summary, caption = “Overall MOE Summary (Tract-Level)”, col.names = c(“Total Tracts”, “Tracts with High MOE (&gt;15%)”, “% High MOE”, “Avg White MOE %”, “Avg Black MOE %”, “Avg Hispanic MOE %”) )</p>
 <p>by_county_moe_summary &lt;- demographic_moe %&gt;% group_by(county_name) %&gt;% summarise( n_tracts = n(), tracts_high_moe = sum(any_high_moe, na.rm = TRUE), pct_high_moe = 100 * tracts_high_moe / n_tracts, avg_white_moe = mean(white_moe_pct, na.rm = TRUE), avg_black_moe = mean(black_moe_pct, na.rm = TRUE), avg_hispanic_moe = mean(hispanic_moe_pct, na.rm = TRUE), .groups = “drop” ) %&gt;% arrange(desc(pct_high_moe))</p>
-<p>knitr::kable( by_county_moe_summary, caption = “MOE Summary by County (Tract-Level)”, col.names = c(“County”, “# Tracts”, “# High MOE Tracts”, “% High MOE”, “Avg White MOE %”, “Avg Black MOE %”, “Avg Hispanic MOE %”) )</p>
-<p>pattern_summary &lt;- demographic_moe %&gt;% group_by(any_high_moe) %&gt;%<br>
-summarise( n_tracts = n(), avg_population = mean(totalE, na.rm = TRUE), avg_white_pct = mean(pct_white, na.rm = TRUE), avg_black_pct = mean(pct_black, na.rm = TRUE), avg_hisp_pct = mean(pct_hispanic, na.rm = TRUE), .groups = “drop” ) %&gt;% mutate( group = if_else(any_high_moe, “High MOE (≥15% in any group)”, “Low MOE (&lt;15%)”) ) %&gt;% select(group, n_tracts, avg_population, avg_white_pct, avg_black_pct, avg_hisp_pct)</p>
-<p>knitr::kable( pattern_summary, caption = “Comparison of Tracts by Data Quality (High vs.&nbsp;Low MOE)”, col.names = c(“MOE Group”, “Number of Tracts”, “Avg Population”, “Avg White %”, “Avg Black %”, “Avg Hispanic %”), format.args = list(big.mark = “,”, digits = 2) )</p>
+<p>knitr::kable(by_county_moe_summary, caption = “MOE Summary by County (Tract-Level)”, col.names = c(“County”, “# Tracts”, “# High MOE Tracts”, “% High MOE”, “Avg White MOE %”, “Avg Black MOE %”, “Avg Hispanic MOE %”) )</p>
+<p>pattern_summary &lt;- demographic_moe %&gt;% group_by(any_high_moe) %&gt;% summarise( n_tracts = n(), avg_population = mean(totalE, na.rm = TRUE), avg_white_pct = mean(pct_white, na.rm = TRUE), avg_black_pct = mean(pct_black, na.rm = TRUE), avg_hisp_pct = mean(pct_hispanic, na.rm = TRUE), .groups = “drop” ) %&gt;% mutate( <code>MOE Group</code> = if_else(any_high_moe, “High MOE (≥15% any group)”, “Low MOE (&lt;15%)”) ) %&gt;% select(<code>MOE Group</code>, n_tracts, avg_population, avg_white_pct, avg_black_pct, avg_hisp_pct)</p>
+<p>knitr::kable(pattern_summary, caption = “Comparison of Tracts by Data Quality (High vs.&nbsp;Low MOE)”, col.names = c(“MOE Group”, “Number of Tracts”, “Avg Population”, “Avg White %”, “Avg Black %”, “Avg Hispanic %”), format.args = list(big.mark = “,”, digits = 2) )</p>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

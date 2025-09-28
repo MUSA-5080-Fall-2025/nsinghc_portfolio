@@ -1,18 +1,23 @@
 ---
-title: "Assignment 1: Census Data Quality for Policy Decisions"
-subtitle: "Evaluating Data Reliability for Algorithmic Decision-Making"
+title: "Assignment1_Attempt1"
 author: "Nina Carlsen"
-date: today
-format:
-  html:
-    theme: cosmo
-    toc: true
-    toc-location: left
-    code-fold: false
-execute:
-  warning: false
-  message: false
+format: html
+editor: visual
 ---
+
+## Executive Summary
+
+New Jersey’s ACS income and demographic data reveal a consistent pattern of uneven data quality. County-level analysis shows a spectrum of reliability—some counties meet high-confidence thresholds (MOE \< 5%), while others fall into moderate or low confidence (\>5% and \>10%, respectively). At the tract level, high MOE flags are concentrated in smaller, less populous tracts and in certain counties, indicating that measurement error is structured rather than random.
+
+These reliability gaps heighten equity concerns. Communities with high MOE—often smaller tracts with higher proportions of racial or ethnic minorities—face greater risk of algorithmic bias because automated tools would rely on less stable estimates. In practice, this could mean under- or over-allocation of services, reinforcing disadvantage in places already experiencing demographic complexity or economic precarity.
+
+Underlying these issues are small sample sizes, population volatility, and the statistical design of the ACS. Tracts with lower population and more heterogeneous housing or migration patterns yield larger sampling errors. Indicator choice (e.g., median income) also amplifies uncertainty where incomes are dispersed, creating persistent structural risk in precisely those communities where accurate targeting matters most.
+
+To address these vulnerabilities, the Department should implement MOE-aware standards: require minimum reliability thresholds for algorithmic inputs, weight or smooth high-MOE measures, and mandate human review where confidence is low. Pair these safeguards with investments in improved data—multi-year pooling, administrative records, or targeted oversampling—and publish transparency dashboards so decision-makers and residents can see where algorithmic decisions are strong, where caution is warranted, and where alternative approaches are needed.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
 
 ```{r}
 library(tidyverse)
@@ -209,3 +214,39 @@ knitr::kable(pattern_summary,
                 "Avg Population", "Avg White %", "Avg Black %", "Avg Hispanic %"),
   format.args = list(big.mark = ",", digits = 2)
 )
+
+recommendations <- nj_reliability %>%
+  mutate(
+    moe_pct = 100 * median_incomeM / median_incomeE,
+    reliability = case_when(
+      is.finite(moe_pct) & moe_pct < 5   ~ "High Confidence",
+      is.finite(moe_pct) & moe_pct < 10  ~ "Moderate Confidence",
+      is.finite(moe_pct) & moe_pct >= 10 ~ "Low Confidence",
+      TRUE ~ NA_character_
+    ),
+    recommendation = case_when(
+      reliability == "High Confidence"      ~ "Safe for algorithmic decisions",
+      reliability == "Moderate Confidence"  ~ "Use with caution - monitor outcomes",
+      reliability == "Low Confidence"       ~ "Requires manual review or additional data",
+      TRUE ~ "Review data"
+    )
+  ) %>%
+  transmute(
+    county = county_name,
+    median_income = median_incomeE,
+    `MOE %` = sprintf("%.2f%%", moe_pct),
+    reliability,
+    recommendation
+  )
+
+knitr::kable(
+  recommendations,
+  caption = "County Reliability & Algorithm Recommendations",
+  col.names = c("County", "Median Income", "MOE %", "Reliability Category", "Recommendation"),
+  format.args = list(big.mark = ",")
+)
+
+high_conf_counties <- recommendations %>% filter(reliability == "High Confidence") %>% pull(county)
+moderate_conf_counties <- recommendations %>% filter(reliability == "Moderate Confidence") %>% pull(county)
+low_conf_counties <- recommendations %>% filter(reliability == "Low Confidence") %>% pull(county)
+```
