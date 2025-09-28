@@ -1,6 +1,7 @@
 ---
 title: "Lab 0: Getting Started with dplyr"
 subtitle: "Your First Data Analysis"
+draft: true
 author: "Nina Singh Carlsen"
 date: today
 format: 
@@ -141,7 +142,6 @@ select(car_data, Model, year, age, Mileage, mileage_per_year)
 
 ```{r categorize-cars}
 # Create a price_category column where if price is < 15000, its is coded as budget, between 15000 and 30000 is midrange and greater than 30000 is mid-range (use case_when)
-car_data <- car_data %>% 
   
 
 # Check your categories select the new column and show it
