@@ -2,7 +2,7 @@ project:
   type: website
   output-dir: docs
   render:
-  - assignment1_final.qmd
+  - Assignment1_NSC
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"
