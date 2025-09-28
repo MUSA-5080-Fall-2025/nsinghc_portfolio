@@ -2,7 +2,10 @@ project:
   type: website
   output-dir: docs
   render:
-  - Assignment1_NSC
+    - index.qmd
+    - weekly-notes/week-01-notes.qmd
+    - weekly-notes/week-02-notes.qmd
+    - labs/Assignment1_NSC.qmd
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"
@@ -12,13 +15,13 @@ website:
         text: Home
       - text: Weekly Notes
         menu:
-          - href: weekly-notes/week-01-notes.html
+          - href: weekly-notes/week-01-notes.qmd
             text: Week 1
-          - href: weekly-notes/week-02-notes.html
-            text: Week 2 
+          - href: weekly-notes/week-02-notes.qmd
+            text: Week 2
       - text: Labs
         menu:
-          - href: labs/Assignment1_NSC.html
+          - href: labs/Assignment1_NSC.qmd
             text: Lab 1
 
 format:
