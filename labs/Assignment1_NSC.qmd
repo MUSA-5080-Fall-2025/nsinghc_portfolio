@@ -16,13 +16,13 @@ execute:
 
 ## Executive Summary
 
-New Jersey’s ACS income and demographic data reveal a consistent pattern of uneven data quality. County-level analysis shows a spectrum of reliability—some counties meet high-confidence thresholds (MOE \< 5%), while others fall into moderate or low confidence (\>5% and \>10%, respectively). At the tract level, high MOE flags are concentrated in smaller, less populous tracts and in certain counties, indicating that measurement error is structured rather than random.
+Counties and census tracts within the state of New Jersey were examined by using Census Data for data reliability. Household income and race/ethnicity were used as examples. Across the board, data varied in their accuracy. Specifically smaller and more racially/ethnically diverse communities were harder to specify in the data with a high degree of certainty within the estimates. 
 
-These reliability gaps heighten equity concerns. Communities with high MOE—often smaller tracts with higher proportions of racial or ethnic minorities—face greater risk of algorithmic bias because automated tools would rely on less stable estimates. In practice, this could mean under- or over-allocation of services, reinforcing disadvantage in places already experiencing demographic complexity or economic precarity.
+Some counties fall into high confidence, whereas others are medium or low. One thing I noticed was that smaller tracts with a higher concentration of racial/ethnic minorities had larger margins of error. This has significant implications for algorithmic bias. Algorithms that use this Census data may over-index the quality of the data for these communities. One example would be using an algorithm for allocating services. 
 
-Underlying these issues are small sample sizes, population volatility, and the statistical design of the ACS. Tracts with lower population and more heterogeneous housing or migration patterns yield larger sampling errors. Indicator choice (e.g., median income) also amplifies uncertainty where incomes are dispersed, creating persistent structural risk in precisely those communities where accurate targeting matters most.
+Underlying factors may include small sample sizes, variation in populations, and the ACS's method of estimates. Tracts with lower population and more heterogenous populations suffered more in terms of estimation accuracy/confidence. 
 
-To address these vulnerabilities, the Department should implement MOE-aware standards: require minimum reliability thresholds for algorithmic inputs, weight or smooth high-MOE measures, and mandate human review where confidence is low. Pair these safeguards with investments in improved data—multi-year pooling, administrative records, or targeted oversampling—and publish transparency dashboards so decision-makers and residents can see where algorithmic decisions are strong, where caution is warranted, and where alternative approaches are needed.
+Smoothing methods, thresholds for margin of error, or human review are all ways to mitigate these challenges. The Department should be consistently wary of ACS estimates, and controls aforementioned should be implemented. 
 
 ## Running Code
 
@@ -259,3 +259,14 @@ high_conf_counties <- recommendations %>% filter(reliability == "High Confidence
 moderate_conf_counties <- recommendations %>% filter(reliability == "Moderate Confidence") %>% pull(county)
 low_conf_counties <- recommendations %>% filter(reliability == "Low Confidence") %>% pull(county)
 ```
+
+## Key Recommendations
+
+1. Theoretically, all counties are safe for algorithmic application. However, Census Tracts should be thoroughly examined, given the variation based on race and ethnicity tract to tract, and higher margins of error for higher populations of people of color. 
+
+## Further Questions
+
+It would be interesting to see how these tracts track spatially - are they close to each other? (The ones that have higher margin of error)
+
+Additionally, I would like to see change over time. 
+
