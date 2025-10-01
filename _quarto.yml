@@ -6,6 +6,7 @@ project:
     - weekly-notes/week-01-notes.qmd
     - weekly-notes/week-02-notes.qmd
     - labs/Assignment1_NSC.qmd
+    - weekly-notes/week-03-notes.qmd
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"
@@ -19,6 +20,8 @@ website:
             text: Week 1
           - href: weekly-notes/week-02-notes.qmd
             text: Week 2
+          - href: weekly-notes/week-03-notes.qmd
+            text: Week 3
       - text: Labs
         menu:
           - href: labs/Assignment1_NSC.qmd

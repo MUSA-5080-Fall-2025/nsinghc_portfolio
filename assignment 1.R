@@ -255,4 +255,12 @@ knitr::kable(
   col.names = c("MOE Group", "Number of Tracts",
                 "Avg Population", "Avg White %", "Avg Black %", "Avg Hispanic %"),
   format.args = list(big.mark = ",", digits = 2)
+  
+  nj_reliability %>%
+    summarise(
+      max_moe   = max(moe_percentage, na.rm = TRUE),
+      any_medium = any(moe_percentage >= 5 & moe_percentage <= 10),
+      any_low    = any(moe_percentage > 10)
+    )
+  
 )

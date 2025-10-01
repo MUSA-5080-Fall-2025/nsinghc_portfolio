@@ -1,0 +1,58 @@
+---
+title: "Week 3 Notes - Data Visualization and Exploratory Analysis"
+author: "Nina Singh Carlsen"
+date: "2025-09-22"
+format: html
+---
+  
+## Key Concepts Learned
+- Visaulization and the way data are presented can and should vary by audience - not in quality of data or findings, but the visuals used (example: state legislature, community advocacy groups, local news reports)
+- Anscombes's Quartet: four datasets with identical summary statistics, but completely different patterns when visualized
+- Ethical data communication requires factoring in margin of error and statistical uncertainty 
+- Exploratory analysis helps uncover patterns in the data, unusual components, reliability; with the goal of understanding the data before making decisions or building models
+- Workflow for EDA: 
+  - Load and inspect
+  - Access reliability 
+  - Visualize distributions 
+  - Explore relationships
+  - Identify patterns
+  - Question anomalies
+  - Document limitations 
+- Planners should take care to analyze and disclose statistical uncertainty with the ACS estimates
+- EDA for Policy Analysis 
+  - Geographic patterns
+  - Population relationships
+  - Demographic patterns
+  - Temporal trends
+  - Data integrity 
+  - Reliability assessment
+- Data joins are done to combine datasets
+  - left: keep all rows from left dataset
+  - right: " right dataset
+  - inner: " match in both sets
+  - outer: " from both datasets
+
+## Coding Techniques
+- Data
+- Aesthetics
+- Geometries
+- Additional layers
+- ggplot2
+- x,y
+- color
+- fill
+- size 
+- point
+- shape 
+- alpha
+
+## Questions & Challenges
+- This was a tough week
+
+## Connections to Policy
+- Data uncertainty is expected and should not be excluded from reported analysis; could affect how decisions are made
+- When advocating for or against a policy based on data, the visualizations should be adjusted based on the audience 
+- Intersectional analysis is more powerful for taking multiple variables into account and more closely mimics real world conditions 
+
+## Reflection
+- Need to review
