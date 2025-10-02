@@ -4,9 +4,9 @@ project:
   render:
     - index.qmd
     - weekly-notes/week-01-notes.qmd
-    - weekly-notes/week-02-notes.qmd
+    - weekly-notes/weekly-02-notes.qmd
     - labs/Assignment1_NSC.qmd
-    - weekly-notes/week-03-notes.qmd
+    - weekly-notes/weekly-03-notes.qmd
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"

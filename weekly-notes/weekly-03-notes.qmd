@@ -6,7 +6,7 @@ format: html
 ---
   
 ## Key Concepts Learned
-- Visaulization and the way data are presented can and should vary by audience - not in quality of data or findings, but the visuals used (example: state legislature, community advocacy groups, local news reports)
+- Visualizations and the way data are presented can and should vary by audience - not in quality of data or findings, but the visuals used (example: state legislature, community advocacy groups, local news reports)
 - Anscombes's Quartet: four datasets with identical summary statistics, but completely different patterns when visualized
 - Ethical data communication requires factoring in margin of error and statistical uncertainty 
 - Exploratory analysis helps uncover patterns in the data, unusual components, reliability; with the goal of understanding the data before making decisions or building models
