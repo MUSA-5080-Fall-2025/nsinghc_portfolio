@@ -1,0 +1,83 @@
+---
+title: "Week 4 Notes - Spatial Data & GIS Operations in R"
+author: "Nina Singh Carlsen"
+date: "2025-09-29"
+format: html
+---
+  
+## Key Concepts Learned
+- Spatial dimensions help to better understand patterns in data, and where they are located
+- Policy question examples: 
+  - Lowest income clustering
+  - Opening a new healthcare clinic 
+  - Comparing school districts
+  - Environmental justice
+- Bias also shows up in spatial data 
+  - Training data bias
+  - Spatial autocorrelation 
+  - Service delivery algorithm bias
+- Vector data model 
+  - Real world to simple geometric representations 
+  - Points (locations), lines (linear features), and polygons (areas)
+  - Each one has attribute and geography
+- Sf package for spatial analysis; spatial depiction is dataframe + geometry 
+- .predicate parameter: tells st_filter() what spatial relationship to look for
+  - border, near, overlap etc. 
+  - if no .predicate specified, defaults to st_intersects() (references the geography itself instead of just st_touches())
+- spatial joins combine datasets based on spatial relationships
+- area calculations depend on the coordinate reference system
+- when to use st_filter():
+  - select/identify features based on location
+  - complete features with their original boundaries
+- when to use st_intersect():
+  - calculate areas, populations, or other measures within specific boundaries
+  - spatial overlay analysis
+  - clip data to a study area
+- union operations combine multiple features into one
+- spatial aggregation summarizes data across boundaries
+- CRS: 
+  - To simply check current CRS st_crs(pa_counties)
+  - To set CRS (ONLY if missing) pa_counties <- st_set_crs(pa_counties, 4326)
+- Transform to different CRS
+  - Pennsylvania South State Plane (good for PA analysis)
+  - pa_counties_projected <- pa_counties %>%   st_transform(crs = 3365)
+- Transform to Albers Equal Area (good for area calculations) pa_counties_albers <-       pa_counties %>%   st_transform(crs = 5070) `
+- When to transform coordinate system: 
+  - Calculating areas or distances
+  - Creating buffers
+  - Doing geometric operations
+  - Working with local/regional data
+- Policy analysis workflow: 
+  - Load data → Get spatial boundaries and attribute data
+  - Check projections → Transform to appropriate CRS
+  - Join datasets → Combine spatial and non-spatial data
+  - Spatial operations → Buffers, intersections, distance calculations
+  - Aggregation → Summarize across spatial units
+  - Visualization → Maps and charts
+  - Interpretation → Policy recommendations
+  
+## Coding Techniques
+- st_filter()
+- st_intersects()
+- st_touches()
+- st_within() (spatial subsetting)
+- .predicate parameter
+- st_disjoint()
+- st_overlaps()
+- st_contains() 
+- r{buffers} (st_buffer())
+
+
+
+## Questions & Challenges
+- Can I make animations/moving maps in R? :) 
+- Can I create shapefiles that I upload to GIS? (probably)
+
+## Connections to Policy
+- In certain situations, spatial analysis is necessary to identify patterns that regular analysis cannot necessarily provide insights for 
+- Datasets heavily determine the quality of the spatial analysis and could sway/steer biases
+- Especially resource allocation, services, and equity mitigation efforts rely on spatial data
+- Maps are often good visuals that get a point across fast and clearly
+
+## Reflection
+I'm really excited to dive deeper into the mapping capabilities of R. I do feel like I need to review the prior materials to catch up a bit more effectively. 
