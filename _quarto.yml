@@ -8,7 +8,7 @@ project:
     - labs/Assignment1_NSC.qmd
     - weekly-notes/weekly-03-notes.qmd
     - weekly-notes/week-04-notes.qmd
-    - labs/lab3-midterm
+    - labs/model_script.qmd
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"
@@ -30,7 +30,8 @@ website:
         menu:
           - href: labs/Assignment1_NSC.qmd
             text: Lab 1
-            0 href: labs/lab3-midterm
+          - href: labs/model_script.qmd
+            text: Midterm
 
 format:
   html:
