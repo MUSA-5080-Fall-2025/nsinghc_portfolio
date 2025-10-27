@@ -4,9 +4,9 @@ project:
   render:
     - index.qmd
     - weekly-notes/week-01-notes.qmd
-    - weekly-notes/weekly-02-notes.qmd
+    - weekly-notes/week-02-notes.qmd
     - labs/Assignment1_NSC.qmd
-    - weekly-notes/weekly-03-notes.qmd
+    - weekly-notes/week-03-notes.qmd
     - weekly-notes/week-04-notes.qmd
     - labs/model_script.qmd
 
@@ -18,13 +18,13 @@ website:
         text: Home
       - text: Weekly Notes
         menu:
-          - href: weekly-notes/week-01-notes.qmd
+          - href: week-notes/week-01-notes.qmd
             text: Week 1
-          - href: weekly-notes/week-02-notes.qmd
+          - href: week-notes/week-02-notes.qmd
             text: Week 2
-          - href: weekly-notes/week-03-notes.qmd
+          - href: week-notes/week-03-notes.qmd
             text: Week 3
-          - href: weekly-notes/week-04-notes.qmd
+          - href: week-notes/week-04-notes.qmd
             text: Week 4
       - text: Labs
         menu:
