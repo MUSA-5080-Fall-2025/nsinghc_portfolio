@@ -18,13 +18,13 @@ website:
         text: Home
       - text: Weekly Notes
         menu:
-          - href: week-notes/week-01-notes.qmd
+          - href: weekly-notes/week-01-notes.qmd
             text: Week 1
-          - href: week-notes/week-02-notes.qmd
+          - href: weekly-notes/week-02-notes.qmd
             text: Week 2
-          - href: week-notes/week-03-notes.qmd
+          - href: weekly-notes/week-03-notes.qmd
             text: Week 3
-          - href: week-notes/week-04-notes.qmd
+          - href: weekly-notes/week-04-notes.qmd
             text: Week 4
       - text: Labs
         menu:
