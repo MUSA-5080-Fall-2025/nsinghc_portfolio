@@ -1,0 +1,1195 @@
+---
+title: "Philadelphia Housing Price Prediction - Technical Appendix"
+author: Nina Carlsen, Ryan Drake, Sujanesh Kakumanu, Kavana Raju, Chloe Robinson, Henry Sywulak-Herr.
+execute:
+  cache: true
+format: 
+  html:
+    code-fold: show
+    toc: true
+    toc-location: left
+    theme: cosmo
+    number-sections: true
+---
+
+This technical appendix documents the full workflow used to engineer and visualize spatial features for predicting residential housing prices in Philadelphia.
+
+```{r setup-and-files}
+options(scipen = 999)
+
+# Packages
+if(!require(pacman)){install.packages("pacman"); library(pacman, quietly = T)}
+p_load(knitr, sf, tidyverse, tidycensus, tigris, here, dplyr, FNN, ggplot2, scales, patchwork, caret, Hmisc, stargazer)
+
+# Files
+sf_data <- st_read("./data/OPA_data.geojson", quiet = TRUE)
+nhoods <- st_read("./data/philadelphia-neighborhoods.geojson", quiet = TRUE)
+
+```
+
+# Property sales data
+
+## Data Preparation
+
+We apply several filters to the property data to for quality and relevance. First, we restrict our analysis to residential properties sold between 2023 and 2024, excluding any other property categories. Second, we remove properties with sale prices below \$10, as these are abnormal prices for residential properties.
+
+To work with Github file size limits, the data is further trimmed of irrelevant columns.
+
+```{r opa-cleaning}
+#| output: false
+
+# Restrict to residential only
+residential_categories <- c(
+  "APARTMENTS > 4 UNITS",
+  "MULTI FAMILY",
+  "SINGLE FAMILY",
+  "MIXED USE"
+)
+residential_data <- sf_data %>%
+  filter(category_code_description %in% residential_categories,
+         year(sale_date) %in% c(2023, 2024),
+         mailing_city_state == "PHILADELPHIA PA",
+         sale_price > 10
+         )
+
+table(residential_data$category_code_description)
+
+# Making sure the file saved to the repo is the trimmed data (to stay below GitHub data limits)
+st_write(residential_data, "./data/OPA_data.geojson", driver = "GeoJSON", delete_dsn = TRUE, quiet = TRUE)
+file.exists("./data/OPA_data.geojson")
+OPA_data <- st_read("./data/OPA_data.geojson", quiet = TRUE) %>% 
+  st_transform(2272)
+
+# OPA_data -> cutting mostly NA columns or irrelevant columns for this model.
+OPA_data <- OPA_data %>%
+  select(-c(
+  cross_reference, date_exterior_condition, exempt_land, fireplaces, fuel, garage_type, house_extension, mailing_address_2, mailing_care_of, market_value_date, number_of_rooms, other_building, owner_2, separate_utilities, sewer, site_type, street_direction, suffix, unfinished, unit, utility
+  ))
+
+names(OPA_data)
+
+```
+
+## Exploratory Data Analysis
+
+Below are selected property variables—Total Livable Area, Bedrooms, Bathrooms, and Age—in relation to Sale Price. Properties with excessive square footage (\>10,000 sqft), missing bedroom or bathroom data, over 12 bathrooms with low sale prices, or implausible construction years were removed to reduce skew and data errors. This additional filtering was kept for the rest of the analysis in this report.
+
+```{r filtering-OPA-and-plots}
+
+# filter out outliers from the dataset
+OPA_data <- OPA_data %>%
+  filter(
+    total_livable_area <= 10000,
+    year_built > 1800,
+    !is.na(number_of_bathrooms),
+    !is.na(number_of_bedrooms),
+    number_of_bathrooms < 12,
+  ) %>%
+  mutate(
+    year_built = as.numeric(year_built),
+    building_age = 2025 - year_built
+  )
+
+p1 <- ggplot(OPA_data, aes(x = total_livable_area, y = sale_price)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_smooth(method = "lm", color = "red", se = TRUE) +
+  scale_y_continuous(labels = dollar_format()) +
+  scale_x_continuous(labels = comma_format()) +
+  labs(
+    title = "Sale Price vs. Total Livable Area",
+    x = "Total Livable Area (sq ft)",
+    y = "Sale Price"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10, face = "bold"))
+
+p2 <- ggplot(OPA_data, aes(x = factor(number_of_bedrooms), y = sale_price)) +
+  geom_boxplot(fill = "gray", alpha = 0.6, outlier.alpha = 0.3, outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", color = "red", size = 2, shape = 18) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Sale Price vs. Number of Bedrooms",
+    x = "Number of Bedrooms",
+    y = "Sale Price"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10, face = "bold"))
+
+p3 <- ggplot(OPA_data, aes(x = factor(number_of_bathrooms), y = sale_price)) +
+  geom_boxplot(fill = "gray", alpha = 0.6, outlier.alpha = 0.3, outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", color = "red", size = 2, shape = 18) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Sale Price vs. Number of Bathrooms",
+    x = "Number of Bathrooms",
+    y = "Sale Price"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10, face = "bold"))
+
+p4 <- ggplot(OPA_data, aes(x = building_age, y = sale_price)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_smooth(method = "lm", color = "red", se = TRUE) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Sale Price vs. Age",
+    x = "Age",
+    y = "Sale Price"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10, face = "bold"))
+
+# Combine plots
+(p1 | p2) / (p3 | p4)
+```
+
+## Feature Engineering
+
+```{r opa-interaction-features}
+
+OPA_data <- OPA_data %>%
+  mutate(
+    # convert to numeric before interactions
+    total_livable_area = as.numeric(total_livable_area),
+    census_tract = as.numeric(as.character(census_tract)),
+    year_built = as.numeric(year_built),
+    total_area = as.numeric(total_area),
+    market_value = as.numeric(market_value),
+    number_of_bedrooms = as.numeric(number_of_bedrooms),
+
+    # building code and total area
+    int_type_tarea = as.numeric(as.factor(building_code_description)) * total_area,
+
+    # market and livable area
+    int_value_larea = market_value * total_livable_area,
+
+    # market and total area
+    int_value_tarea = market_value * total_area,
+
+    # livable area and exterior condition
+    int_larea_econd = total_livable_area * as.numeric(as.factor(exterior_condition)),
+
+    # livable area and interior condition
+    int_larea_icond = total_livable_area * as.numeric(as.factor(interior_condition)),
+
+    # livable area and bedrooms
+    int_larea_beds = total_livable_area * number_of_bedrooms
+  )
+
+```
+
+```{r neighborhood-effects}
+#| output: false
+
+pa_crs <- 2272  
+neighbor_points <- st_transform(OPA_data, pa_crs)
+
+nrow(nhoods)
+
+st_crs(neighbor_points)
+nhoods <- st_transform(nhoods, 2272)
+
+#joining houses to  neighborhoods
+neighbor_points <- neighbor_points %>%
+  st_join(nhoods, join = st_intersects)
+
+
+#results 
+neighbor_points %>%
+  st_drop_geometry() %>%
+  count(NAME) %>%
+  arrange(desc(n))
+
+```
+
+```{r prices-by-neighborhood-and-map}
+
+#spatial joins
+price_by_nhood <- neighbor_points %>%
+  st_drop_geometry() %>%
+  group_by(NAME) %>%
+  dplyr::summarize(
+    median_price = median(sale_price, na.rm = TRUE),
+    n_sales = n()
+  )
+
+nhoods_prices <- nhoods %>%
+  left_join(price_by_nhood, by = "NAME")
+
+#setting median house price classes
+nhoods_prices <- nhoods_prices %>%
+  mutate(
+    price_class = cut(median_price,
+                      breaks = c(0, 400000, 600000, 800000, 1000000, Inf),
+                      labels = c("Under $400k", "$400k-$600k", "$600k-$800k", 
+                                 "$800k-$1M", "Over $1M"),
+                      include.lowest = TRUE)
+  )
+
+#mapping
+ggplot() +
+  geom_sf(data = nhoods_prices, aes(fill = price_class), 
+          color = "white", size = 0.5) +
+  scale_fill_brewer(
+    name = "Median Price",
+    palette = "YlOrRd",  # Try also: "Reds", "OrRd", "YlGnBu", "PuRd"
+    na.value = "grey90",
+    direction = 1  # Use -1 to reverse (dark = low)
+  ) +
+  labs(
+    title = "Median Home Prices by Philadlephia Neighborhood",
+  ) +
+  theme_void() +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(face = "bold", size = 14),
+    legend.title = element_text(face = "bold")
+  )
+
+```
+
+```{r prices-and-sales}
+#| message: false
+#| output: false
+
+price_by_nhood %>%
+  arrange(desc(median_price)) %>%
+  head(10)
+
+price_by_nhood %>%
+  arrange(desc(median_price)) %>%
+  print(n = 50)
+
+price_by_nhood %>%
+  arrange(desc(median_price)) %>%
+  print(n = 50)
+
+price_by_nhood %>%
+  arrange(desc(n_sales)) %>%
+  head(5)
+
+```
+
+```{r weaththy-neighborhood-effects}
+
+# Define wealthy as >=$420,000 which is 1.5x city median of 279,900
+wealthy_hoods <- c("FITLER_SQUARE", "CHESTNUT_HILL", "UNIVERISTY_CITY", "SPRUCE_HILL", "QUEEN_VILLAGE", "GRADUATE_HOSPITAL", "PACKER_PARK", "RITTENHOUSE", "NORTHERN_LIBERTIES", "HAWTHORNE", "FANCISVILLE", "BELLA_VISTA", "SOCIETY_HILL", "GARDEN_COURT", "CEDAR_PARK", "EAST_PARK", "MOUNT_AIRY_WEST", "FAIRMOUNT", "LOGAN_SQUARE", "WOODLAND_TERRACE", "RIVERFRONT", "PASSYUNK_SQUARE", "ROXBOROUGH_PARK", "OLD_KENSINGTON", "WASHINGTON_SQUARE", "FISHTOWN"
+)
+
+# Binary Split 
+nhoods_prices <- nhoods_prices %>%
+  mutate(
+    wealthy_neighborhood = ifelse(NAME %in% wealthy_hoods, "Wealthy", "Not Wealthy"),
+    wealthy_neighborhood = as.factor(wealthy_neighborhood)
+  )
+
+nhoods_prices %>%
+  st_drop_geometry() %>%
+  count(wealthy_neighborhood)
+
+neighbor_points <- neighbor_points %>%
+  st_join(nhoods_prices, by = "NAME")
+
+# Still add neighbor points to OPA data
+
+```
+
+Households were denoted as wealthy if their median household price was over \$420,000, which is 1.5x city median of 279,900. This term will be used in an interaction in Model 4 to account for theoretical differences in wealthy neighborhoods, such as inflated costs for additional home amenities such as bedrooms, bathrooms, or livable floor area.
+
+# Census Data
+
+## Data Preparation
+
+```{r census-var-ids}
+
+# link variables and aliases
+vars <- c("pop_tot" = "B01001_001",
+          "med_hh_inc" = "B19013_001",
+          "med_age" = "B01002_001")
+
+# the FIPS code for the state of PA is 42
+fips_pa <- 42
+
+```
+
+Variables pulled from the census include total population, median household income, and median age.
+
+```{r census-var-acquisition}
+#| output: false
+
+# retrieve data from the ACS for 2023
+demo_vars_pa <- get_acs(geography = "tract",
+                        variable = vars,
+                        year = 2023,
+                        state = fips_pa,
+                        output = "wide",
+                        geometry = T,
+                        progress_bar = F) %>% 
+  st_transform(2272)
+
+# separate NAME column into its constituent parts
+demo_vars_pa <- demo_vars_pa %>%
+  separate(NAME,
+           into = c("TRACT", "COUNTY", "STATE"),
+           sep = "; ",
+           remove = T) %>% 
+  mutate(TRACT = parse_number(TRACT),
+         COUNTY = sub(x = COUNTY, " County", ""))
+
+# filter out Philadelphia tracts
+demo_vars_phl <- demo_vars_pa %>%
+  filter(COUNTY == "Philadelphia")
+
+```
+
+```{r census-plot}
+
+# plot cenusus variables to compare
+plot(demo_vars_phl[,"pop_totE"],
+     main = "Total Population",
+     breaks = seq(0, 10500, 500),
+     nbreaks = 21)
+plot(demo_vars_phl[,"med_hh_incE"],
+     main = "Median Household Income",
+     breaks = seq(0, 200000, 10000),
+     nbreaks = 20)
+plot(demo_vars_phl[,"med_ageE"],
+     main = "Median Age",
+     breaks = seq(0, 75, 5),
+     nbreaks = 15)
+
+```
+
+```{r census-na-counts}
+
+# get NA counts per column
+na_counts <- sapply(demo_vars_phl, function(x) {sum(is.na(x))})
+kable(t(as.data.frame(na_counts)))
+
+# filter out all rows that have at least one column with an na value
+na_index <- !complete.cases(demo_vars_phl %>% st_drop_geometry())
+demo_vars_phl_na <- demo_vars_phl[na_index,]
+kable(head(demo_vars_phl_na, 5) %>% select(-ends_with("M")) %>% st_drop_geometry(),
+      col.names = c("GeoID", "Tract", "County", "State", "Population", "Median HH Inc ($)", "Median Age (yrs)"),
+      row.names = F)
+
+```
+
+27 and 17 census tracts have a value of NA for median household income and median age, respectively. For the 17 census tracts where there is no reported population, the median household income and median age will be set to 0. The remaining 10 census tracts that have population but no reported median household income will be omitted from the dataset.
+
+```{r census-isolate-na}
+
+# create a dataset with NAs replaced with zero where applicable
+demo_vars_phl_rep <- demo_vars_phl %>% 
+  mutate(med_hh_incE = case_when(pop_totE == 0 & is.na(med_hh_incE) ~ 0,
+                                 .default = med_hh_incE),
+         med_ageE = case_when(pop_totE == 0 & is.na(med_ageE) ~ 0,
+                                 .default = med_ageE))
+
+# final cleaned dataset without the 10 census tracts that have population values but have NA values for Median Household Income
+demo_vars_phl_clean <- demo_vars_phl_rep[complete.cases(demo_vars_phl_rep %>%
+                                                          select(-ends_with("M")) %>%
+                                                          st_drop_geometry()),]
+
+# table with the omitted census tracts
+demo_vars_phl_omit <- demo_vars_phl_rep[!complete.cases(demo_vars_phl_rep %>% select(-ends_with("M")) %>% st_drop_geometry()),]
+kable(demo_vars_phl_omit %>% select(-ends_with("M")) %>% st_drop_geometry(),
+      col.names = c("GeoID", "Tract", "County", "State", "Population", "Median HH Inc ($)", "Median Age (yrs)"),
+      row.names = F, caption = "Census Tracts Omitted from Analysis due to Data Unavailability")
+```
+
+```{r census-join-to-OPA_data}
+
+# join census variables to the OPA data
+OPA_data <- st_join(OPA_data, demo_vars_phl_clean %>% select(pop_totE, med_hh_incE, med_ageE))
+
+# isolate NA rows and plot where they are
+censusNAs <- OPA_data[is.na(OPA_data$med_hh_incE),]
+
+census_plt1 <- ggplot() +
+  geom_sf(data = demo_vars_phl_clean$geometry) +
+  geom_sf(data = censusNAs, size = 0.15) +
+  theme_void() +
+  labs(title = "Properties without Census Data")
+census_plt2 <- ggplot() +
+  geom_sf(data = demo_vars_phl_clean$geometry, fill = "black", color = "transparent") +
+  theme_void() +
+  labs(title = "Census Tracts with Data (Black)")
+
+(census_plt1 | census_plt2)
+```
+
+Of the 22121 properties in the dataset after cleaning and omitting outliers, 248 - approximately 1.1% of the dataset - have no associated census data due to the lack of a Median Household Income value for those census tracts. Comparing plots of property locations without census data and that of census tracts which have data confirms this spatial relationship.
+
+# Spatial Features
+
+## Data Preparation
+
+This stage prepares and validates the OpenDataPhilly spatial datasets used to engineer neighborhood-level variables for the housing model.
+
+**Steps Performed**
+
+-   Transformed all spatial datasets to **EPSG 2272 (NAD83 / PA South ftUS)** for consistent distance measurements.
+
+-   Removed invalid geometries, dropped Z/M values, and converted all housing geometries to points.
+
+-   Imported and projected OpenDataPhilly amenities:
+
+    -   Transit Stops
+
+    -   Hospitals
+
+    -   Parks & Recreation Sites
+
+    -   Schools Parcels (centroids created from polygon features)
+
+    -   Crime Incidents (2023 and 2024 combined)
+
+```{r open-data-philly-datasets}
+#| message: false
+#| warning: false
+
+#CRS & radii
+pa_crs <- 2272    # NAD83 / PA South (ftUS)
+mi_to_ft   <- 5280
+r_park_ft   <- 0.25 * mi_to_ft
+r_crime_ft  <- 0.50 * mi_to_ft
+r_school_ft <- 0.50 * mi_to_ft
+
+# turn off spherical geometry (makes buffer/join ops faster)
+sf::sf_use_s2(FALSE)
+
+## CONVERT SALES DATA TO POINTS ##
+OPA_points <- st_transform(OPA_data, pa_crs)
+
+#Drop Z/M if present
+st_geometry(OPA_points) <- st_zm(st_geometry(OPA_points), drop = TRUE, what = "ZM")
+
+#Make geometries valid
+st_geometry(OPA_points) <- st_make_valid(st_geometry(OPA_points))
+
+#Ensure POINT geometry (works for points/lines/polygons/collections)
+st_geometry(OPA_points) <- st_point_on_surface(st_geometry(OPA_points))
+
+#Add sale ID
+OPA_points <- OPA_points %>%
+  mutate(sale_id = dplyr::row_number())
+
+#read & project layers
+transit   <- st_read("./data/Transit_Stops_(Spring_2025)/Transit_Stops_(Spring_2025).shp", quiet = TRUE) |> st_transform(pa_crs)
+hospitals <- st_read("./data/Hospitals.geojson", quiet = TRUE) |> st_transform(pa_crs)
+parksrec  <- st_read("./data/PPR_Program_Sites.geojson", quiet = TRUE)|> st_transform(pa_crs)
+schools_polygons   <- st_read("./data/Schools_Parcels.geojson", quiet = TRUE) |> st_transform(pa_crs)
+crime_2023     <- st_read("./data/crime_incidents_2023/incidents_part1_part2.shp", quiet = TRUE)        |> st_transform(pa_crs)
+crime_2024     <- st_read("./data/crime_incidents_2024/incidents_part1_part2.shp", quiet = TRUE)        |> st_transform(pa_crs)
+
+#combine 2023 & 2024 crime datasets
+crime <- rbind(crime_2023, crime_2024)
+
+#create centroids for schools dataset
+schools <- if (any(st_geometry_type(schools_polygons) %in% c("POLYGON","MULTIPOLYGON"))) {
+  st_centroid(schools_polygons, )
+} else {
+  schools_polygons
+}
+```
+
+## Exploratory Data Analysis
+
+Exploratory plots and maps examine the raw accessibility patterns across Philadelphia before feature engineering.
+
+```{r exploratory-spatial-feature-plots}
+
+# Transit stops (raw)
+ggplot() +
+geom_sf(data = transit, size = 0.3, alpha = 0.6) +
+labs(title = "Raw Layer Check: Transit Stops (SEPTA Spring 2025)") +
+theme_minimal()
+
+# Hospitals (raw)
+ggplot() +
+geom_sf(data = hospitals, size = 0.6, alpha = 0.7) +
+labs(title = "Raw Layer Check: Hospitals") +
+theme_minimal()
+
+# Parks & Recreation Program Sites (raw)
+ggplot() +
+geom_sf(data = parksrec, size = 0.4, alpha = 0.6) +
+labs(title = "Raw Layer Check: Parks & Recreation Sites") +
+theme_minimal()
+
+# Schools (centroids of polygons) — raw
+ggplot() +
+geom_sf(data = schools, size = 0.4, alpha = 0.7) +
+labs(title = "Raw Layer Check: Schools (Centroids)") +
+theme_minimal()
+
+# Crime points are huge; sampling for speed
+set.seed(5080)
+crime_quick <- if (nrow(crime) > 30000) dplyr::slice_sample(crime, n = 30000) else crime
+
+ggplot() +
+geom_sf(data = crime_quick, size = 0.1, alpha = 0.25) +
+labs(title = "Raw Layer Check: Crime Incidents (sampled if large)") +
+theme_minimal()
+
+```
+
+### Interpretation
+
+-   **Transit Stops:** Dense corridors radiate from Center City, showing strong transit coverage.
+
+-   **Hospitals:** Sparse but geographically balanced.
+
+-   **Parks & Recreation:** uneven distribution,
+
+-   **Schools:** evenly distributed across most neighborhoods
+
+-   **Crime:** Visibly concentrated, confirming the need for log-transformed counts
+
+## Feature Engineering
+
+Spatial features were derived using two complementary approaches: **k-Nearest Neighbor (kNN)** and **buffer-based counts,** depending on whether accessibility was best captured as proximity or exposure.
+
+```{r knn-features}
+
+#| message: false
+#| warning: false
+
+#clean sales data
+sales_xy <- st_coordinates(OPA_points)
+ok_sales  <- complete.cases(sales_xy)
+OPA_points <- OPA_points[ok_sales, ]    # keep only rows with valid XY
+sales_xy  <- st_coordinates(OPA_points) # refresh coordinates
+
+transit_xy <- st_coordinates(transit)
+hosp_xy    <- st_coordinates(hospitals)
+
+# feature 1 - distance to nearest transit stop (ft)
+knn_tr <- FNN::get.knnx(
+  data  = st_coordinates(transit),
+  query = sales_xy,
+  k = 1)
+
+OPA_points <- OPA_points %>%
+  mutate(dist_nearest_transit_ft = as.numeric(knn_tr$nn.dist[,1]))
+
+# feature 2 - distance to nearest hospital (ft)
+knn_hp <- FNN::get.knnx(
+  data  = st_coordinates(hospitals),
+  query = sales_xy,
+  k = 1)
+
+OPA_points <- OPA_points %>%
+  mutate(dist_nearest_hospital_ft = as.numeric(knn_hp$nn.dist[,1]))
+```
+
+```{r buffer-features}
+#| message: false
+#| warning: false
+
+# feature 3 - parks/rec sites within 0.25 mi (count)
+rel_parks <- sf::st_is_within_distance(OPA_points, parksrec, dist = r_park_ft)
+
+OPA_points <- OPA_points %>%
+  mutate(parks_cnt_0p25mi = lengths(rel_parks))
+
+# feature 4 - crime count within 0.5 mi (per square mile)
+crime_buffer <- st_buffer(OPA_points, dist = r_crime_ft)
+
+rel_crime <- st_intersects(crime_buffer, crime, sparse = TRUE)
+
+# count number of crimes
+crime_cnt <- lengths(rel_crime)
+
+rm(rel_crime)
+
+OPA_points <- OPA_points |>
+  mutate(
+    crime_cnt_0p5mi     = crime_cnt,
+    log1p_crime_cnt_0p5 = log1p(crime_cnt_0p5mi)
+  )
+
+# feature 5 - schools within 0.5 mi (using centroids)
+rel_sch <- sf::st_is_within_distance(OPA_points, schools, dist = r_school_ft)
+
+OPA_points <- OPA_points %>%
+  mutate(schools_cnt_0p5mi = lengths(rel_sch))
+```
+
+### Summary Table and Justification
+
+| Feature                          | Method       | Parameter   | Theoretical Rationale                                                                                                           |
+|-----------|-----------|-----------|----------------------------------------|
+| Distance to Nearest Transit Stop | kNN (k = 1)  | –           | Captures ease of access to public transport; nearest stop approximates walkability and job access.                              |
+| Distance to Nearest Hospital     | kNN (k = 1)  | –           | Reflects accessibility to health care and emergency services; proximity adds perceived security for households.                 |
+| Parks & Rec Sites within 0.25 mi | Buffer Count | r = 0.25 mi | Measures exposure to green space and recreational facilities within a 5-minute walk; positive amenity effect on property value. |
+| Crime Incidents within 0.5 mi    | Buffer Count | r = 0.5 mi  | Represents local safety environment; higher crime counts reduce housing desirability.                                           |
+| Schools within 0.5 mi            | Buffer Count | r = 0.5 mi  | Reflects educational access and family appeal; clustering of schools often raises residential demand.                           |
+| Population                       | Census       | –           | Represents the present residential demand within a census tract                                                                 |
+| Median Household Income          | Census       | –           | Indicative of the ability of present residents of a census tract to afford housing                                              |
+| Median Age                       | Census       | –           | Measure of the dominant age group in a census tract (i.e. high student or elderly population)                                   |
+
+### Feature Validation and Visualization
+
+```{r feature-validation-plots}
+
+## Transit Accessibility
+ggplot(OPA_points, aes(x = dist_nearest_transit_ft)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 30) +
+  labs(title = "Distribution: Distance to Nearest Transit Stop",
+       x = "Feet to Nearest Stop", y = "Count") +
+  theme_minimal()
+
+ggplot(OPA_points) +
+  geom_sf(aes(color = dist_nearest_transit_ft), size = 0.5) +
+  scale_color_viridis_c(option = "plasma", labels = comma) +
+  labs(title = "Transit Accessibility Across Sales Parcels",
+       color = "Distance (ft)") +
+  theme_minimal()
+
+## Hospital Proximity
+ggplot(OPA_points, aes(x = dist_nearest_hospital_ft)) +
+  geom_histogram(fill = "darkorange", color = "white", bins = 30) +
+  labs(title = "Distribution: Distance to Nearest Hospital",
+       x = "Feet to Nearest Hospital", y = "Count") +
+  theme_minimal()
+
+ggplot(OPA_points) +
+  geom_sf(aes(color = dist_nearest_hospital_ft), size = 0.5) +
+  scale_color_viridis_c(option = "magma", labels = comma) +
+  labs(title = "Hospital Accessibility Across Sales Parcels",
+       color = "Distance (ft)") +
+  theme_minimal()
+
+## Parks & Recreation
+ggplot(OPA_points, aes(x = parks_cnt_0p25mi)) +
+  geom_histogram(fill = "seagreen", color = "white", bins = 20) +
+  labs(title = "Distribution: Parks & Rec Sites Within 0.25 mi",
+       x = "Count within 0.25 mi", y = "Number of Parcels") +
+  theme_minimal()
+
+ggplot(OPA_points) +
+  geom_sf(aes(color = parks_cnt_0p25mi), size = 0.6) +
+  scale_color_viridis_c(option = "viridis") +
+  labs(title = "Proximity to Parks & Recreation (0.25 mi Buffer)",
+       color = "Parks Count") +
+  theme_minimal()
+
+## Crime Density
+ggplot(OPA_points, aes(x = crime_cnt_0p5mi)) +
+  geom_histogram(fill = "firebrick", color = "white", bins = 30) +
+  labs(title = "Distribution: Crime Incidents Within 0.5 mi",
+       x = "Crime Count (2023–2024)", y = "Number of Parcels") +
+  theme_minimal()
+
+ggplot(OPA_points) +
+  geom_sf(aes(color = log1p_crime_cnt_0p5), size = 0.6) +
+  scale_color_viridis_c(option = "inferno") +
+  labs(title = "Crime Exposure (log-transformed within 0.5 mi)",
+       color = "log(1+Crime Count)") +
+  theme_minimal()
+
+## Schools Accessibility
+ggplot(OPA_points, aes(x = schools_cnt_0p5mi)) +
+  geom_histogram(fill = "purple", color = "white", bins = 20) +
+  labs(title = "Distribution: Schools Within 0.5 mi",
+       x = "School Count (0.5 mi Buffer)", y = "Number of Parcels") +
+  theme_minimal()
+
+ggplot(OPA_points) +
+  geom_sf(aes(color = schools_cnt_0p5mi), size = 0.6) +
+  scale_color_viridis_c(option = "cividis") +
+  labs(title = "School Accessibility (0.5 mi Buffer)",
+       color = "Schools Count") +
+  theme_minimal()
+```
+
+**Interpretation:**
+
+-   **Transit proximity**: Most parcels are within 500 ft of a stop, confirming strong transit coverage across Philadelphia.
+
+-   **Hospital proximity**: Right-skewed distribution, consistent with limited facility count.
+
+-   **Parks access**: Sparse exposure (mostly 0–1 within 0.25 mi), highlighting recreational inequities.
+
+-   **Crime exposure**: Wide variation, clustered along high-density corridors; log-transformed to stabilize scale.
+
+-   **School proximity**: Uniform urban coverage with typical parcels having 4-7 schools within 0.5 mi.
+
+Nina Histogram + map
+
+```{r sales-data-histogram}
+sp_data <- st_read("./data/OPA_data.geojson", quiet = T)
+
+str(sp_data$sale_price)
+
+sp_data_filtered <- sp_data %>%
+  mutate(sale_price = as.numeric(sale_price)) %>%
+  filter(sale_price > 1000)
+
+ggplot(sp_data_filtered, aes(x = sale_price)) + 
+  geom_histogram(
+    binwidth = 20000, 
+    fill = "grey",
+    color = "black"
+  ) +
+  labs(
+    title = "Histogram of Sale Prices in Philadelphia", 
+    x = "Sale Price",
+    y = "Count of Homes"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(labels = label_dollar()) +
+  coord_cartesian(xlim = c(0, 2000000), ylim = c(0, 3000))
+
+summary(sp_data_filtered$sale_price)
+
+sp_data_filtered <- sp_data_filtered %>%
+  mutate(
+    sale_price = as.numeric(sale_price),
+    sale_price_capped = pmin(sale_price, quantile(sale_price, 0.99, na.rm = TRUE))
+  )
+
+ggplot(sp_data_filtered) +
+  geom_sf(aes(color = sale_price_capped), size = 0.6, alpha = 0.7) +
+  scale_color_viridis_c(labels = label_dollar(), name = "Sale Price (USD)") +
+  labs(title = "Philadelphia Sale Prices") +
+  theme_minimal()
+```
+
+```{r VIF-analysis}
+
+# function to check for statistically significant correlations between independent variables
+sig_corr <- function(dat, dep_var) {
+  # remove the independent variable from the dataset
+  dat_corr <- dat %>% select(-all_of(dep_var))
+  
+  # run a correlation matrix for the independent vars
+  correlation_matrix <- rcorr(as.matrix(dat_corr))
+  values <- correlation_matrix$r
+  vifs <- apply(values, 1, function(x){
+    return(round(1/(1-abs(x)), 2))
+  })
+  
+  values_df <- values %>% as.data.frame()
+  vifs_df <- vifs %>% as.data.frame()
+  
+  # convert correlation coefficients and p-values to long format
+  corCoeff_df <- correlation_matrix$r %>% 
+    as.data.frame() %>% 
+    mutate(var1 = rownames(.))
+  
+  corVIF_df <- vifs %>% 
+    as.data.frame() %>% 
+    mutate(var1 = rownames(.))
+  
+  corPval_df <- correlation_matrix$P %>% 
+    as.data.frame() %>% 
+    mutate(var1 = rownames(.))
+  
+  # merge long format data
+  corMerge <- list(
+    corCoeff_df %>% pivot_longer(-var1, names_to = "var2", values_to = "correlation") %>% as.data.frame(),
+    corVIF_df %>% pivot_longer(-var1, names_to = "var2", values_to = "vif_factor") %>% as.data.frame(),
+    corPval_df %>% pivot_longer(-var1, names_to = "var2", values_to = "p_value") %>% as.data.frame()) %>%
+    reduce(left_join, by = c("var1", "var2"))
+  
+  # filter to isolate unique pairs, then rows with correlation > 0.5 and p < 0.05
+  corUnfiltered <- corMerge %>% 
+    filter(var1 != var2) %>% 
+    rowwise() %>% 
+    filter(var1 < var2) %>% 
+    ungroup() %>% 
+    as.data.frame()
+  
+  corFiltered <- corUnfiltered %>% 
+    filter(abs(vif_factor) > 3 & p_value < 0.05) %>% 
+    arrange(desc(abs(correlation)))
+  
+  # save the raw correlation values and the filtered variable pairs
+  final <- set_names(list(values_df, vifs_df, corUnfiltered, corFiltered),
+                     c("R2", "VIF", "AllCor", "SelCor"))
+  
+  return(final)
+}
+
+# create a dataset with just modeling variables
+OPA_modelvars <- OPA_points %>% select(sale_price, total_livable_area, building_age, number_of_bedrooms, number_of_bathrooms,
+                                       pop_totE, med_hh_incE, med_ageE,
+                                       dist_nearest_transit_ft, dist_nearest_hospital_ft, parks_cnt_0p25mi, log1p_crime_cnt_0p5, schools_cnt_0p5mi,
+                                       )
+
+# calculate VIFs and determine potentially troublesome correlations between variables
+vif_check <- sig_corr(OPA_modelvars %>% st_drop_geometry(), dep_var = "sale_price")
+
+kable(vif_check[["VIF"]])
+
+```
+
+None of the variables tested have a significant VIF score that is above 3, indicating that there is little concern of multicollinearity in the models moving forward.
+
+# Model Building
+
+## Model 1: Structural Terms
+
+Our first model uses structural property characteristics to build a multiple linear regression, regressing sale price on total livable area, number of bedrooms, number of bathrooms, and building age.
+
+```{r model-1}
+
+model1 <- lm(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age,
+
+  data = na.omit(OPA_points)
+)
+
+summary(model1)
+```
+
+## Model 2: Incorporation of Census Data
+
+Our second model builds on the structural property characteristics regression by incorporating census tract–level variables, including population, median household income, and median age.
+
+```{r model-2}
+
+model2 <- lm(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+
+    pop_totE +
+    med_hh_incE +
+    med_ageE,            
+    
+  data = na.omit(OPA_points)
+)
+
+summary(model2)
+```
+
+## Model 3: Incorporation of Spatial Features
+
+```{r model-3}
+
+model3 <- lm(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+    total_area +
+    
+    pop_totE +
+    med_hh_incE +
+    med_ageE +  
+
+    dist_nearest_transit_ft +
+    dist_nearest_hospital_ft +
+    parks_cnt_0p25mi +
+    log1p_crime_cnt_0p5,
+    
+  data = na.omit(OPA_points)
+)
+
+summary(model3)
+
+```
+
+## Model 4: Incorporation of Interactions and Fixed Effects
+
+```{r luxury-premium-hypothesis}
+
+# join data separately here to avoid conflicts with earlier code blocks
+neighbor_points_unique <- neighbor_points %>%
+  st_drop_geometry() %>%
+  distinct(census_tract, .keep_all = TRUE)
+
+neighbor_points_unique <- neighbor_points %>%
+  st_drop_geometry() %>%
+  group_by(census_tract) %>%
+  dplyr::summarize(
+    wealthy_neighborhood = first(wealthy_neighborhood),
+    n_sales = mean(n_sales, na.rm = TRUE),
+    median_price = mean(median_price, na.rm = TRUE),
+    price_class = first(price_class)
+  )
+
+OPA_points_copy <- OPA_points
+
+OPA_points_copy <- OPA_points_copy %>%
+  left_join(
+    neighbor_points_unique,
+    by = "census_tract"
+  )
+
+```
+
+```{r model-4}
+
+model4 <- lm(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+    total_area +
+    
+    pop_totE +
+    med_hh_incE +
+    med_ageE +  
+  
+    dist_nearest_transit_ft +
+    dist_nearest_hospital_ft +
+    parks_cnt_0p25mi +
+    log1p_crime_cnt_0p5 +
+    
+    number_of_bathrooms * wealthy_neighborhood +
+    
+    int_type_tarea +
+    int_value_larea +
+    int_value_tarea +
+    int_larea_econd +
+    int_larea_icond +
+    int_larea_beds,
+    
+                     
+  data = na.omit(OPA_points_copy)
+)
+
+summary(model4)
+
+#there is only a premium on wealth neighborhood for total area, total livable area, and number of bathrooms that are significant. There is also a significant value for int_value_larea just from interacting the OPA data itsself which just assesses market value and size scalability. 
+
+
+```
+
+## Comparison of Model Performance
+
+We can evaluate performance by conducting a 10-fold cross-validation of the 4 models, and comparing their RMSE, MAE, and $R^2$.
+
+```{r k-fold-initiation}
+
+# Define 10-fold CV
+train_control <- trainControl(
+  method = "cv",
+  number = 10,
+  savePredictions = "final"
+)
+
+```
+
+```{r model1-cv}
+
+# Model 1: Structural Features Only
+model1_cv <- train(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age,
+  data = na.omit(OPA_points),
+  method = "lm",
+  trControl = train_control
+)
+
+model1_cv
+
+```
+
+```{r model2-cv}
+# Model 2: Structural + Census
+model2_cv <- train(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+    pop_totE +
+    med_hh_incE +
+    med_ageE,
+  data = na.omit(OPA_points),
+  method = "lm",
+  trControl = train_control
+)
+
+model2_cv
+
+```
+
+```{r model3-cv}
+
+# Model 3: Structural + Census + Spatial
+model3_cv <- train(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+    total_area +
+    
+    pop_totE +
+    med_hh_incE +
+    med_ageE +  
+
+    dist_nearest_transit_ft +
+    dist_nearest_hospital_ft +
+    parks_cnt_0p25mi +
+    log1p_crime_cnt_0p5,
+  data = na.omit(OPA_points),
+  method = "lm",
+  trControl = train_control
+)
+
+model3_cv
+
+```
+
+```{r model4-cv}
+
+# Model 4: Structural + Census + Spatial + Interaction
+model4_cv <- train(
+  sale_price ~ 
+    total_livable_area +
+    number_of_bedrooms +
+    number_of_bathrooms +
+    building_age +
+    total_area +
+    
+    pop_totE +
+    med_hh_incE +
+    med_ageE +  
+  
+    dist_nearest_transit_ft +
+    dist_nearest_hospital_ft +
+    parks_cnt_0p25mi +
+    log1p_crime_cnt_0p5 +
+    
+    number_of_bathrooms * wealthy_neighborhood +
+    
+    int_type_tarea +
+    int_value_larea +
+    int_value_tarea +
+    int_larea_econd +
+    int_larea_icond +
+    int_larea_beds,
+  
+  data = na.omit(OPA_points_copy),
+  method = "lm",
+  trControl = train_control
+)
+
+model4_cv
+
+```
+
+```{r all-model-comparison}
+
+cv_results <- data.frame(
+  Model = c("Model 1", 
+            "Model 2", 
+            "Model 3", 
+            "Model 4"),
+  RMSE = c(
+        model1_cv$results$RMSE,
+        model2_cv$results$RMSE,
+        model3_cv$results$RMSE,
+        model4_cv$results$RMSE
+      ),
+    MAE = c(
+        model1_cv$results$MAE,
+        model2_cv$results$MAE,
+        model3_cv$results$MAE,
+        model4_cv$results$MAE
+      ),
+  R_squared = c(
+        model1_cv$results$Rsquared,
+        model2_cv$results$Rsquared,
+        model3_cv$results$Rsquared,
+        model4_cv$results$Rsquared
+      )
+)
+
+print(cv_results)
+```
+
+```{r model-summary-table}
+
+# create model coefficient table in stargazer
+models_list <- list(model1, model2, model3, model4)
+models_summary_table <- stargazer(models_list, type = "text", style = "default")
+```
+
+```{r cv-scatterplots}
+
+# plot predicted vs actual value plots
+ggplot(model1_cv$pred, aes(x = obs, y = pred)) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  scale_x_continuous(labels = dollar_format()) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Model 1 Cross-Validation: Predicted vs. Actual Sale Price",
+    x = "Actual Sale Price",
+    y = "Predicted Sale Price"
+  ) +
+  theme_minimal()
+
+ggplot(model2_cv$pred, aes(x = obs, y = pred)) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  scale_x_continuous(labels = dollar_format()) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Model 2 Cross-Validation: Predicted vs. Actual Sale Price",
+    x = "Actual Sale Price",
+    y = "Predicted Sale Price"
+  ) +
+  theme_minimal()
+
+ggplot(model3_cv$pred, aes(x = obs, y = pred)) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  scale_x_continuous(labels = dollar_format()) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Model 3 Cross-Validation: Predicted vs. Actual Sale Price",
+    x = "Actual Sale Price",
+    y = "Predicted Sale Price"
+  ) +
+  theme_minimal()
+
+ggplot(model4_cv$pred, aes(x = obs, y = pred)) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  scale_x_continuous(labels = dollar_format()) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Model 4 Cross-Validation: Predicted vs. Actual Sale Price",
+    x = "Actual Sale Price",
+    y = "Predicted Sale Price"
+  ) +
+  theme_minimal()
+```
+
+# Model Diagnostics
+
+```{r model-diagnostic-plots}
+
+# create diagnostic plots
+plot(model4)
+
+```
+
+In the plot of residuals versus fitted values, the data largely displays a random distribution except for a spike in low sale price values. This indicates that the model might be poorly predicting for low sale price values as they don't follow an entirely linear pattern. However, there was no visible cone shape in the data, which was a promising sign that this discrepancy was not due to a trend consistent across the entire dataset. The Q-Q plot indicates that residual values are not perfectly normally distributed, further confirming that the dataset does not seem to display a linear relationship around extreme values. However, an analysis of the residuals in a Cook's Distance plot indicates that despite this lack of normality in the dependent variable, none of the observations are extraordinarily influential. These violations were therefore deemed mild enough to not warrant intervention.
+
+# Conclusion and Recommendations
+
+Our final model had an RMSE value of \$195,093.2 and an MAE of \$71,587.66. This was an improvement over previous models, where Model 1 had an RMSE value of \$315,407.2 and an MAE of \$146,134.04. Despite these improvements, these values are still extremely high relative to the current median household price in Philadelphia of approximately \$232,000, according to Zillow. The strongest predicting features utilized in our model included whether the neighborhood a property had a median household income greater than \$420,000 and could be considered wealthy ($\beta$ = 47,309.230, p \< 0.01), the number of bedrooms ($\beta$ = 35,121.540, p \< 0.01), and the number of bathrooms ($\beta$ = 25,942.210, p \< 0.01). Furthermore, our interaction term between wealthy neighborhood status and the number of bathrooms proved to also strongly influence the model output ($\beta$ = 22,639.990, p \< 0.01), indicating that properties in wealthier neighborhoods that have additional bathrooms tend to gain a stronger sale price premium compared to properties in non-wealthy neighborhoods.
+
+Sale prices in Philadelphia do not seem to entirely follow a linear relationship, particularly among lower-priced homes. This resulted in limited prediction potential for properties with lower sale prices. This could produce potential equity issues related to pricing homes of lesser value and those in lower-income neighborhoods that are impacted by surrounding properties. Many of the variables used were simply aggregated without being weighted, such as how the count of crime incidents within a half-mile does not take into account the severity of such events or how the quality of parks within a quarter-mile of a property is not considered. This could over- or under-emphasize these variables in the model.
