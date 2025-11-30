@@ -1,0 +1,254 @@
+---
+  title: "Spatial Predictive Modeling with Chicago 311"
+author: "Nina Carlsen"
+output:
+  html_document:
+  toc: true
+toc_float: true
+code_folding: show
+---
+
+```{r}
+library(tidyverse) 
+library(sf) 
+library(lubridate) 
+library(janitor) 
+library(spdep) 
+library(MASS)
+
+theme_set(theme_minimal())
+
+## ---- load-311 ---------------------------------------------------------
+## ---- load-311 ---------------------------------------------------------
+calls_raw <- read_csv(
+  "C:/Users/ninac/OneDrive/Documents/GitHub/nsinghc_portfolio/labs/lab4/data/chicago_311.csv"
+) |>
+  clean_names()
+
+names(calls_raw)  # should include: creation_date, latitude, longitude
+
+## ---- filter-2017 ------------------------------------------------------
+rodent_2017 <- calls_raw |>
+  mutate(creation_date = mdy(creation_date)) |>  # "12/18/2018" → Date
+  filter(
+    year(creation_date) == 2017,
+    !is.na(latitude),
+    !is.na(longitude)
+  )
+
+## ---- sf-convert -------------------------------------------------------
+rodent_sf <- st_as_sf(
+  rodent_2017,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+) |>
+  st_transform(26916)
+
+## ---- load-boundary ----------------------------------------------------
+chi_boundary <- st_read(
+  "C:/Users/ninac/OneDrive/Documents/GitHub/nsinghc_portfolio/labs/lab4/data/chicago_boundary.geojson"
+) |>
+  st_transform(26916)
+
+## ---- map-points, fig.height=5 ----------------------------------------
+ggplot() +
+  geom_sf(data = chi_boundary, fill = NA) +
+  geom_sf(data = rodent_sf, alpha = 0.4, size = 0.5, color = "red") +
+  labs(
+    title   = "Rodent Baiting 311 Requests (2017)",
+    caption = "Source: Chicago Open Data Portal"
+  )
+```
+
+For this analysis, I used the *311 Service Requests – Rodent Baiting – Historical* dataset, filtered to incidents that occurred in 2017. I first cleaned and inspected the data, converted the date field into a usable format, and removed records with missing latitude or longitude. After converting the data into an sf object and projecting it into a meter-based CRS, I visualized the spatial distribution of rodent baiting requests across Chicago.
+
+The exploratory map shows that rodent complaints are not evenly distributed throughout the city. Several clusters appear in older residential areas, particularly on the Southwest and Northwest Sides, while other neighborhoods show consistently low activity. This early visualization highlights the presence of clear spatial patterns and potential clusters, motivating the need for spatial predictive modeling rather than simple non-spatial regression.
+
+```{r}
+## ---- fishnet ----------------------------------------------------------
+grid <- st_make_grid(
+  chi_boundary,
+  cellsize = 500,
+  square = TRUE
+) |> st_as_sf() |>
+  mutate(grid_id = row_number()) |>
+  st_intersection(chi_boundary)
+
+## ---- aggregate-to-grid ------------------------------------------------
+rodent_grid <- st_join(rodent_sf, grid, join = st_within)
+
+grid_counts <- rodent_grid |>
+  st_drop_geometry() |>
+  count(grid_id, name = "count")
+
+grid_sf <- grid |>
+  left_join(grid_counts, by = "grid_id") |>
+  mutate(count = replace_na(count, 0L))
+
+## ---- map-counts, fig.height=5 ----------------------------------------
+ggplot(grid_sf) +
+  geom_sf(aes(fill = count), color = NA) +
+  scale_fill_viridis_c() +
+  labs(title = "Rodent Baiting Counts per 500m Grid Cell")
+
+```
+
+To create a consistent spatial unit for modeling, I generate a 500m × 500m fishnet grid covering the Chicago boundary. This grid creates uniform spatial units that allow me to aggregate point-level rodent requests into count data.
+
+Next, I spatially join rodent request points to grid cells and calculate the number of service requests per cell. Visualizing these counts shows distinct clusters of high‐activity areas and reinforces that rodent activity is unevenly distributed across space.
+
+```{r}
+## ---- fishnet ----------------------------------------------------------
+grid <- st_make_grid(
+  chi_boundary,
+  cellsize = 500,
+  square = TRUE
+) |> st_as_sf() |>
+  mutate(grid_id = row_number()) |>
+  st_intersection(chi_boundary)
+
+## ---- aggregate-to-grid ------------------------------------------------
+rodent_grid <- st_join(rodent_sf, grid, join = st_within)
+
+grid_counts <- rodent_grid |>
+  st_drop_geometry() |>
+  count(grid_id, name = "count")
+
+grid_sf <- grid |>
+  left_join(grid_counts, by = "grid_id") |>
+  mutate(count = replace_na(count, 0L))
+
+## ---- map-counts, fig.height=5 ----------------------------------------
+ggplot(grid_sf) +
+  geom_sf(aes(fill = count), color = NA) +
+  scale_fill_viridis_c() +
+  labs(title = "Rodent Baiting Counts per 500m Grid Cell")
+
+```
+
+To capture spatial structure in the data, I compute three types of spatial features:
+
+1.  k-Nearest Neighbor Spatial Lag This captures how much rodent activity occurs in neighboring cells, summarizing local spatial context. Higher lag values indicate clustering.
+
+2.  Local Moran’s I (Hotspots and Coldspots) Local Moran’s I identifies statistically significant hotspots—clusters of high rodent activity—and coldspots—clusters of unusually low activity. This step highlights spatial autocorrelation and reveals areas with unusually high issue concentration.
+
+3.  Distance to the Nearest Hotspot To quantify how far each location is from high-activity areas, I compute each grid cell’s distance to the nearest hotspot. This continuous variable becomes a useful predictor in the statistical models.
+
+```{r}
+## ---- knn-lag ----------------------------------------------------------
+centroids <- st_centroid(grid_sf)
+coords <- st_coordinates(centroids)
+knn_nb <- knearneigh(coords, k = 8) |> knn2nb()
+lw_knn <- nb2listw(knn_nb, style = "W")
+grid_sf$lag_count <- lag.listw(lw_knn, grid_sf$count)
+
+## ---- local-moran ------------------------------------------------------
+local_m <- localmoran(grid_sf$count, lw_knn) |> as.data.frame()
+p_col <- grep("^Pr", names(local_m), value = TRUE)[1]
+
+grid_sf <- grid_sf |>
+  mutate(
+    local_i = local_m$Ii,
+    local_p = local_m[[p_col]],
+    hotspot = case_when(
+      local_i > 0 & local_p < 0.05 ~ "Hotspot",
+      local_i < 0 & local_p < 0.05 ~ "Coldspot",
+      TRUE ~ "Not significant"
+    )
+  )
+
+## ---- map-hotspots, fig.height=5 --------------------------------------
+ggplot(grid_sf) +
+  geom_sf(aes(fill = hotspot), color = NA) +
+  scale_fill_manual(values = c("Hotspot"="#d73027","Coldspot"="#4575b4","Not significant"="grey80")) +
+  labs(title = "Local Moran's I Hotspots and Coldspots")
+
+## ---- dist-hotspot -----------------------------------------------------
+hotspot_union <- grid_sf |>
+  filter(hotspot == "Hotspot") |> st_union()
+
+grid_sf$dist_hotspot_km <- st_distance(
+  st_centroid(grid_sf),
+  hotspot_union
+) |> apply(1, min) |> as.numeric() / 1000
+
+```
+
+The goal of this section is to build predictive statistical models of rodent activity. I create a modeling dataframe containing the count of rodent requests and the spatial predictors generated above.
+
+I first fit a Poisson regression model. However, the data exhibit overdispersion (variance far exceeds the mean), making Poisson inappropriate. I then fit a Negative Binomial regression model, which handles overdispersion more effectively. Comparing AIC values confirms that the Negative Binomial model provides a superior fit and is used for subsequent validation and evaluation.
+
+```{r}
+## ---- modeling-data ----------------------------------------------------
+model_df <- grid_sf |>
+  st_drop_geometry() |>
+  select(grid_id, count, lag_count, dist_hotspot_km) |>
+  drop_na()
+
+## ---- fit-poisson ------------------------------------------------------
+pois_mod <- glm(
+  count ~ lag_count + dist_hotspot_km,
+  family = poisson(link = "log"),
+  data = model_df
+)
+
+## ---- fit-nb -----------------------------------------------------------
+nb_mod <- MASS::glm.nb(
+  count ~ lag_count + dist_hotspot_km,
+  data = model_df
+)
+
+## ---- compare-aic ------------------------------------------------------
+AIC(pois_mod, nb_mod)
+
+```
+
+To evaluate how well the model generalizes across space, I implement leave-one-community-out spatial cross-validation. Instead of random folds, which ignore spatial structure, this method withholds one community area at a time, trains on the rest of the city, and tests on the held-out neighborhood.
+
+This approach simulates predicting rodent activity in an unseen geographic region. I compute MAE and RMSE across all folds. These metrics provide a spatially honest estimate of model performance, revealing how well the model captures underlying spatial dynamics beyond the specific clusters observed in the training data.
+
+```{r}
+## ---- load-community ---------------------------------------------------
+comm_areas <- st_read(
+  "C:/Users/ninac/OneDrive/Documents/GitHub/nsinghc_portfolio/labs/lab4/data/community_areas.geojson"
+) |> st_transform(26916)
+
+comm_areas <- comm_areas |> select(comm_name = community)
+
+## ---- join-grid-comm ---------------------------------------------------
+grid_comm <- st_join(grid_sf, comm_areas)
+
+model_df_comm <- grid_comm |>
+  st_drop_geometry() |>
+  filter(!is.na(comm_name)) |>
+  select(grid_id, comm_name, count, lag_count, dist_hotspot_km)
+
+## ---- spatial-cv -------------------------------------------------------
+set.seed(123)
+communities <- unique(model_df_comm$comm_name)
+
+all_preds <- purrr::map_dfr(communities, function(g) {
+  train <- filter(model_df_comm, comm_name != g)
+  test <- filter(model_df_comm, comm_name == g)
+
+  mod <- MASS::glm.nb(
+    count ~ lag_count + dist_hotspot_km,
+    data = train
+  )
+
+  test$pred <- predict(mod, newdata = test, type = "response")
+  test
+})
+
+mae <- mean(abs(all_preds$count - all_preds$pred))
+rmse <- sqrt(mean((all_preds$count - all_preds$pred)^2))
+
+tibble(MAE = mae, RMSE = rmse)
+
+```
+
+The spatial cross-validation results show how well the Negative Binomial model generalizes across Chicago’s community areas. The MAE indicates that the model’s average prediction error per grid cell is reasonably small, suggesting that the spatial lag and distance-to-hotspot features successfully capture key spatial patterns in rodent activity. The RMSE is higher, reflecting that the model struggles more in neighborhoods with unusually high or irregular rodent activity.
+
+Errors are not evenly distributed: communities with strong clustering patterns similar to the citywide trend tend to have lower errors, while areas with sparse data or unique local conditions show higher errors. This highlights the importance of using spatial cross-validation rather than random folds, as it provides a more realistic assessment of performance across different parts of the city.
+
+Overall, the model predicts general spatial trends well but is less accurate in atypical neighborhoods—pointing to opportunities for improvement, such as incorporating additional environmental or land-use features.
