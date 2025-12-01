@@ -1,5 +1,5 @@
 ---
-  title: "Spatial Predictive Modeling with Chicago 311"
+title: "Spatial Predictive Modeling with Chicago 311"
 author: "Nina Carlsen"
 output:
   html_document: 

@@ -1,15 +1,6 @@
 project:
   type: website
   output-dir: docs
-  render:
-    - index.qmd
-    - weekly-notes/week-01-notes.qmd
-    - weekly-notes/week-02-notes.qmd
-    - labs/Assignment1_NSC.qmd
-    - weekly-notes/week-03-notes.qmd
-    - weekly-notes/week-04-notes.qmd
-    - model_script.qmd
-    - lab4.qmd
 
 website:
   title: "Nina Singh Carlsen - MUSA 5080 Portfolio"
